@@ -5,11 +5,18 @@ import './HeroPanel.css';
 interface HeroPanelProps {
   player: PlayerState;
   isActive: boolean;
+  onClick?: () => void;
+  targetable?: boolean;
 }
 
-export function HeroPanel({ player, isActive }: HeroPanelProps) {
+export function HeroPanel({ player, isActive, onClick, targetable }: HeroPanelProps) {
   return (
-    <div className={`hero-panel${isActive ? ' hero-panel--active' : ''}`}>
+    <button
+      type="button"
+      className={`hero-panel${isActive ? ' hero-panel--active' : ''}${targetable ? ' hero-panel--targetable' : ''}`}
+      onClick={onClick}
+      disabled={!onClick}
+    >
       <div className="hero-panel__identity">
         <span className="hero-panel__name">{player.heroCard.name}</span>
         <span className="hero-panel__player">{player.name}</span>
@@ -22,6 +29,6 @@ export function HeroPanel({ player, isActive }: HeroPanelProps) {
         </span>
       </div>
       <LinkGauge level={player.linkLevel} />
-    </div>
+    </button>
   );
 }

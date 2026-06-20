@@ -6,6 +6,12 @@ export interface UnitInPlay {
   currentHealth: number;
   currentAttack: number;
   canAttack: boolean;
+  /** Lashing de Kaladin (niveau 3) : ne peut pas attaquer pendant 1 tour. */
+  isLashed: boolean;
+  /** Cible protégée par cette unité via Couverture : 'hero' ou instanceId d'une unité alliée. */
+  guarding?: string;
+  /** Obstination de Lopen : a déjà survécu une fois à un coup fatal. */
+  hasSurvivedLethal: boolean;
 }
 
 export interface PlayerState {
@@ -21,6 +27,7 @@ export interface PlayerState {
   hand: Card[];
   board: UnitInPlay[];
   graveyard: Card[];
+  heroAbilityUsedThisTurn: boolean;
 }
 
 export type Phase = 'main' | 'attack' | 'end';
@@ -30,4 +37,5 @@ export interface GameState {
   activePlayerId: string;
   phase: Phase;
   players: Record<string, PlayerState>;
+  winnerId: string | null;
 }

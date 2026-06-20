@@ -51,3 +51,58 @@
 .game-board__hand {
   border-top: 1px solid #3a3a44;
 }
+
+.game-board--ended {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+}
+
+.game-board__hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #d8a93a;
+}
+
+.game-board__hint button {
+  background: #3a3a44;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.game-board__unit-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.game-board__unit-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  min-height: 20px;
+}
+
+.game-board__unit-actions button {
+  background: #2c5d8f;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+
+.game-board__guard-badge {
+  font-size: 0.7rem;
+  color: #5d9bd8;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}

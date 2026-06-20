@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getDatabase } from 'firebase/database';
+import { getDatabase, type Database } from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -11,5 +11,9 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-export const firebaseApp = initializeApp(firebaseConfig);
-export const database = getDatabase(firebaseApp);
+/** La synchro Firebase est optionnelle : sans VITE_FIREBASE_DATABASE_URL, le jeu reste jouable en local. */
+export const isFirebaseConfigured = Boolean(firebaseConfig.databaseURL && firebaseConfig.apiKey);
+
+export const database: Database | null = isFirebaseConfigured
+  ? getDatabase(initializeApp(firebaseConfig))
+  : null;
