@@ -14,9 +14,11 @@ type ActionMode =
 
 interface GameBoardProps {
   localPlayerId?: string;
+  /** En mode local « hotseat », la perspective suit toujours le joueur actif. */
+  hotseat?: boolean;
 }
 
-export function GameBoard({ localPlayerId = 'player1' }: GameBoardProps) {
+export function GameBoard({ localPlayerId = 'player1', hotseat = false }: GameBoardProps) {
   const game = useGameStore((state) => state.game);
   const playCard = useGameStore((state) => state.playCard);
   const endTurn = useGameStore((state) => state.endTurn);
@@ -27,18 +29,21 @@ export function GameBoard({ localPlayerId = 'player1' }: GameBoardProps) {
 
   const [mode, setMode] = useState<ActionMode>({ type: 'idle' });
 
+  // En hotseat, le joueur « local » est toujours celui dont c'est le tour.
+  const perspectiveId = hotseat ? game.activePlayerId : localPlayerId;
   const playerIds = Object.keys(game.players);
-  const opponentId = playerIds.find((id) => id !== localPlayerId) ?? localPlayerId;
-  const localPlayer = game.players[localPlayerId];
+  const opponentId = playerIds.find((id) => id !== perspectiveId) ?? perspectiveId;
+  const localPlayer = game.players[perspectiveId];
   const opponent = game.players[opponentId];
-  const isLocalTurn = game.activePlayerId === localPlayerId;
+  const isLocalTurn = game.activePlayerId === perspectiveId;
 
   if (!localPlayer || !opponent) return null;
 
   if (game.winnerId) {
+    const localWon = game.winnerId === perspectiveId;
     return (
       <div className="game-board game-board--ended">
-        <h1>{game.winnerId === localPlayerId ? 'Victoire !' : 'Défaite'}</h1>
+        <h1>{hotseat ? 'Partie terminée' : localWon ? 'Victoire !' : 'Défaite'}</h1>
         <p>{game.players[game.winnerId].name} l'emporte.</p>
       </div>
     );
@@ -46,15 +51,20 @@ export function GameBoard({ localPlayerId = 'player1' }: GameBoardProps) {
 
   const resetMode = () => setMode({ type: 'idle' });
 
+  const handleEndTurn = () => {
+    resetMode();
+    endTurn();
+  };
+
   const handlePlayCard = (index: number) => {
     if (!isLocalTurn) return;
-    playCard(localPlayerId, index);
+    playCard(perspectiveId, index);
   };
 
   const handleLocalUnitClick = (unit: UnitInPlay) => {
     if (!isLocalTurn) return;
     if (mode.type === 'guard') {
-      declareGuard(localPlayerId, mode.protectorInstanceId, unit.instanceId);
+      declareGuard(perspectiveId, mode.protectorInstanceId, unit.instanceId);
       resetMode();
       return;
     }
@@ -65,24 +75,24 @@ export function GameBoard({ localPlayerId = 'player1' }: GameBoardProps) {
 
   const handleLocalHeroClick = () => {
     if (!isLocalTurn || mode.type !== 'guard') return;
-    declareGuard(localPlayerId, mode.protectorInstanceId, 'hero');
+    declareGuard(perspectiveId, mode.protectorInstanceId, 'hero');
     resetMode();
   };
 
   const handleOpponentUnitClick = (unit: UnitInPlay) => {
     if (!isLocalTurn) return;
     if (mode.type === 'attack') {
-      attackUnit(localPlayerId, mode.attackerInstanceId, unit.instanceId);
+      attackUnit(perspectiveId, mode.attackerInstanceId, unit.instanceId);
       resetMode();
     } else if (mode.type === 'lashing') {
-      triggerLashing(localPlayerId, unit.instanceId);
+      triggerLashing(perspectiveId, unit.instanceId);
       resetMode();
     }
   };
 
   const handleOpponentHeroClick = () => {
     if (!isLocalTurn || mode.type !== 'attack') return;
-    attackHero(localPlayerId, mode.attackerInstanceId);
+    attackHero(perspectiveId, mode.attackerInstanceId);
     resetMode();
   };
 
@@ -98,7 +108,7 @@ export function GameBoard({ localPlayerId = 'player1' }: GameBoardProps) {
     <div className="game-board">
       <header className="game-board__status">
         <span>Tour {game.turn}</span>
-        <span>{isLocalTurn ? 'Votre tour' : `Tour de ${opponent.name}`}</span>
+        <span>{hotseat ? `Tour de ${localPlayer.name}` : isLocalTurn ? 'Votre tour' : `Tour de ${opponent.name}`}</span>
         {mode.type !== 'idle' && (
           <span className="game-board__hint">
             {mode.type === 'attack' && 'Choisissez une cible ennemie...'}
@@ -114,7 +124,7 @@ export function GameBoard({ localPlayerId = 'player1' }: GameBoardProps) {
             Lashing (Jureur)
           </button>
         )}
-        <button type="button" onClick={endTurn} disabled={!isLocalTurn}>
+        <button type="button" onClick={handleEndTurn} disabled={!isLocalTurn}>
           Passer le tour
         </button>
       </header>

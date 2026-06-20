@@ -35,7 +35,12 @@ function App() {
     );
   }
 
-  return <GameBoard localPlayerId={session.mode === 'online' ? session.role : 'player1'} />;
+  return (
+    <GameBoard
+      localPlayerId={session.mode === 'online' ? session.role : 'player1'}
+      hotseat={session.mode === 'local'}
+    />
+  );
 }
 
 export default App;

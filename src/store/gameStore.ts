@@ -385,8 +385,14 @@ export const useGameStore = create<GameStore>((set) => ({
       const nextPlayer = state.game.players[nextPlayerId];
       const updatedMaxStormlight = Math.min(MAX_STORMLIGHT, nextPlayer.maxStormlight + 1);
 
+      // Pioche automatique en début de tour (si le deck n'est pas vide).
+      const drawsCard = nextPlayer.deck.length > 0;
+      const [drawn, ...restDeck] = nextPlayer.deck;
+
       const updatedNextPlayer: PlayerState = {
         ...nextPlayer,
+        deck: drawsCard ? restDeck : nextPlayer.deck,
+        hand: drawsCard ? [...nextPlayer.hand, drawn] : nextPlayer.hand,
         maxStormlight: updatedMaxStormlight,
         stormlight: updatedMaxStormlight,
         heroAbilityUsedThisTurn: false,
