@@ -2,13 +2,13 @@
   "name": "Archives de Roshar",
   "short_name": "Roshar",
   "description": "Jeu de cartes multijoueur tour par tour inspiré du Cosmere de Brandon Sanderson.",
-  "start_url": "/",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#0c0d10",
   "theme_color": "#0c0d10",
   "icons": [
     {
-      "src": "/favicon.svg",
+      "src": "favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
