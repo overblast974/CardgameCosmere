@@ -1,0 +1,48 @@
+.hero-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  border: 1px solid #3a3a44;
+  border-radius: 6px;
+  background: #14151a;
+  min-width: 220px;
+}
+
+.hero-panel--active {
+  border-color: #d8a93a;
+}
+
+.hero-panel__identity {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.hero-panel__name {
+  font-weight: 700;
+}
+
+.hero-panel__player {
+  font-size: 0.75rem;
+  color: #9a98a6;
+}
+
+.hero-panel__vitals {
+  display: flex;
+  gap: 12px;
+  font-size: 0.8rem;
+}
+
+.hero-panel__health {
+  color: #4caf6e;
+  font-weight: 700;
+}
+
+.hero-panel__shield {
+  color: #5d9bd8;
+}
+
+.hero-panel__stormlight {
+  color: #d8633a;
+}

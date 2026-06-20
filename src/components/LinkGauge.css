@@ -1,0 +1,29 @@
+.link-gauge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.link-gauge__pips {
+  display: flex;
+  gap: 4px;
+}
+
+.link-gauge__pip {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid #6a4fb5;
+  background: transparent;
+}
+
+.link-gauge__pip--filled {
+  background: #6a4fb5;
+}
+
+.link-gauge__label {
+  font-size: 0.75rem;
+  color: #c7c5d0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}

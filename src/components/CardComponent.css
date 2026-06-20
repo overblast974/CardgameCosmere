@@ -1,0 +1,88 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  width: 140px;
+  min-height: 180px;
+  padding: 8px;
+  border: 1px solid #3a3a44;
+  border-radius: 6px;
+  background: #1b1c22;
+  color: #e8e6e0;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  gap: 6px;
+}
+
+.card:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.card--selected {
+  outline: 2px solid #d8a93a;
+}
+
+.card__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card__cost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #2c5d8f;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.card__name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1.1;
+}
+
+.card__meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #9a98a6;
+}
+
+.card__text {
+  flex: 1;
+  font-size: 0.72rem;
+  line-height: 1.25;
+  color: #c7c5d0;
+  margin: 0;
+}
+
+.card__stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.card__attack {
+  color: #d8633a;
+}
+
+.card__health {
+  color: #4caf6e;
+}
+
+.card--radiant { border-color: #2c5d8f; }
+.card--spren { border-color: #6a4fb5; }
+.card--surge { border-color: #b53a3a; }
+.card--fabrial { border-color: #9a8a3a; }
+.card--heraut { border-color: #3a8f8f; }
+.card--eclat { border-color: #d8a93a; }
