@@ -25,6 +25,33 @@ export const LINK_LEVEL_NAMES: Record<LinkLevel, string> = {
   4: 'Armure Radiante',
 };
 
+/**
+ * Mots-clés de gameplay portés par les unités :
+ * - couverture : peut s'interposer pour protéger un allié ou le héros.
+ * - obstination : survit une fois à un coup fatal (reste à 1 PV).
+ * - zele : peut attaquer dès son arrivée en jeu.
+ */
+export type Keyword = 'couverture' | 'obstination' | 'zele';
+
+/**
+ * Effets résolus par le moteur pour les Surges et Fabrials :
+ * - damage : inflige effectValue dégâts à une unité ennemie ciblée.
+ * - disable : une unité ennemie ciblée ne peut pas attaquer à son prochain tour.
+ * - bounce : renvoie une unité ennemie ciblée dans la main de son propriétaire.
+ * - buff : une unité alliée ciblée gagne +effectValue/+effectValue.
+ * - draw : pioche effectValue cartes.
+ * - stormlight : gagne effectValue Stormlight ce tour.
+ * - aoe-damage : inflige effectValue dégâts à toutes les unités ennemies.
+ */
+export type CardEffectType =
+  | 'damage'
+  | 'disable'
+  | 'bounce'
+  | 'buff'
+  | 'draw'
+  | 'stormlight'
+  | 'aoe-damage';
+
 /** Bloc de base partagé par toutes les cartes. */
 export interface BaseCard {
   id: string;
@@ -33,6 +60,7 @@ export interface BaseCard {
   cost: number;
   order: Order;
   text?: string;
+  keywords?: Keyword[];
 }
 
 /** Unité Radiant classique (héros ou non). */
@@ -65,12 +93,16 @@ export interface SprenCard extends BaseCard {
 export interface SurgeCard extends BaseCard {
   type: 'surge';
   effect: string;
+  effectType?: CardEffectType;
+  effectValue?: number;
 }
 
-/** Équipement attaché à une unité ou à un héros. */
+/** Équipement ou consommable technologique. */
 export interface FabrialCard extends BaseCard {
   type: 'fabrial';
   effect: string;
+  effectType?: CardEffectType;
+  effectValue?: number;
   durationTurns?: number;
 }
 
@@ -111,12 +143,30 @@ export interface LinkCondition {
   description: string;
 }
 
+/**
+ * Déclencheur de gain de Lien :
+ * - protection : quand une unité alliée absorbe une attaque via Couverture.
+ * - destruction : quand une unité ennemie est détruite par une attaque ou un pouvoir.
+ */
+export type LinkGainTrigger = 'protection' | 'destruction';
+
+/**
+ * Pouvoir actif du héros (débloqué au niveau de Lien 3, une fois par tour) :
+ * - lashing : une unité ennemie ciblée ne peut pas attaquer à son prochain tour.
+ * - smite : inflige heroPowerValue dégâts à une unité ennemie ciblée.
+ */
+export type HeroPowerType = 'lashing' | 'smite';
+
 /** Définition complète d'un héros, au-delà de sa simple carte Radiant. */
 export interface HeroDefinition {
   cardId: string;
   order: Order;
   baseHealth: number;
   linkCondition: LinkCondition;
+  linkGainTrigger: LinkGainTrigger;
+  heroPowerType: HeroPowerType;
+  heroPowerName: string;
+  heroPowerValue?: number;
   abilities: HeroAbility[];
 }
 

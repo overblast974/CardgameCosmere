@@ -1,36 +1,55 @@
 .lobby {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  max-width: 480px;
-  margin: 60px auto;
-  padding: 24px;
-  background: #14151a;
-  border: 1px solid #3a3a44;
-  border-radius: 8px;
-  color: #e8e6e0;
+  gap: 18px;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 32px 20px 48px;
+  min-height: 100svh;
+  color: var(--text);
+}
+
+.lobby__header {
+  text-align: center;
 }
 
 .lobby h1 {
   margin: 0;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--gold);
+  text-shadow: 0 0 24px rgba(216, 169, 58, 0.3);
 }
 
 .lobby__subtitle {
-  margin: 0;
-  color: #9a98a6;
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-style: italic;
 }
 
 .lobby__section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding-top: 12px;
-  border-top: 1px solid #3a3a44;
+  gap: 10px;
+  padding: 16px;
+  background: var(--bg-panel-soft);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
 }
 
 .lobby__section h2 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  font-family: var(--font-display);
+  color: var(--storm);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.lobby__hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
 }
 
 .lobby__row {
@@ -39,29 +58,115 @@
 }
 
 .lobby__warning {
-  color: #d8a93a;
-  font-size: 0.85rem;
+  margin: 0;
+  color: var(--gold);
+  font-size: 0.82rem;
 }
 
 .lobby button {
-  background: #2c5d8f;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 8px 14px;
+  background: #22304e;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 16px;
   cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.lobby button:hover:not(:disabled) {
+  filter: brightness(1.2);
 }
 
 .lobby button:disabled {
-  background: #3a3a44;
+  background: var(--border-soft);
+  color: var(--muted);
   cursor: not-allowed;
+}
+
+.lobby__cta {
+  background: linear-gradient(160deg, #b98a24, #8a6418) !important;
+  border-color: var(--gold) !important;
+  color: #fff8e8 !important;
+  font-weight: 700;
+  padding: 13px 16px !important;
+  box-shadow: 0 0 16px rgba(216, 169, 58, 0.2);
 }
 
 .lobby input {
   flex: 1;
-  padding: 8px;
-  border-radius: 4px;
-  border: 1px solid #3a3a44;
-  background: #0c0d10;
-  color: #e8e6e0;
+  min-width: 0;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-deep);
+  color: var(--text);
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+}
+
+/* ---------- Sélecteur de deck ---------- */
+
+.deck-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.deck-picker__label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.deck-picker__options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.deck-picker__option {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 8px !important;
+  border-radius: 12px !important;
+  background: var(--bg-deep) !important;
+  border: 1px solid var(--border) !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.deck-picker__glyph {
+  font-size: 1.7rem;
+}
+
+.deck-picker__hero {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-align: center;
+  line-height: 1.15;
+}
+
+.deck-picker__deck-name {
+  font-size: 0.68rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.deck-picker__option--windrunner.deck-picker__option--selected {
+  border-color: #3f7fbf !important;
+  box-shadow: 0 0 14px rgba(63, 127, 191, 0.4);
+}
+
+.deck-picker__option--skybreaker.deck-picker__option--selected {
+  border-color: #aab4cd !important;
+  box-shadow: 0 0 14px rgba(170, 180, 205, 0.35);
+}
+
+.deck-picker__option--selected .deck-picker__deck-name {
+  color: var(--storm);
 }

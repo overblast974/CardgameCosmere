@@ -17,6 +17,8 @@ export interface UnitInPlay {
 export interface PlayerState {
   id: string;
   name: string;
+  /** Id du deck choisi, pour retrouver le héros et ses règles (loader). */
+  deckId: string;
   heroCard: Card;
   heroHealth: number;
   heroShield: number;

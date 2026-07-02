@@ -1,7 +1,7 @@
 {
   "hero": {
     "id": "kaladin-stormblessed",
-    "name": "Kaladin Stormblessed",
+    "name": "Kaladin Béni-des-Tempêtes",
     "type": "radiant",
     "cost": 0,
     "order": "Windrunner",
@@ -9,7 +9,7 @@
     "attack": 3,
     "health": 30,
     "bondedSprenId": "sylphrena",
-    "text": "Capacité de Lien niveau 3 \"Lashing\" : cible une unité ennemie, elle ne peut pas attaquer pendant 1 tour. Niveau 4 \"Armure Radiante\" : +15 bouclier."
+    "text": "Niveau 3 « Lashing » : une unité ennemie ne peut pas attaquer à son prochain tour. Niveau 4 « Armure Radiante » : +15 bouclier."
   },
 
   "heroDefinition": {
@@ -17,28 +17,31 @@
     "order": "Windrunner",
     "baseHealth": 30,
     "linkCondition": {
-      "description": "Gagne 1 point de Lien chaque fois qu'une unité alliée absorbe des dégâts grâce à un effet de protection (ex: Couverture)."
+      "description": "Gagne 1 Lien chaque fois qu'une unité alliée absorbe une attaque grâce à Couverture."
     },
+    "linkGainTrigger": "protection",
+    "heroPowerType": "lashing",
+    "heroPowerName": "Lashing",
     "abilities": [
       {
         "linkLevelRequired": 1,
         "name": "Esquisse",
-        "description": "Débloque la carte Spren Sylphrena."
+        "description": "Sylphrena se manifeste aux côtés de Kaladin."
       },
       {
         "linkLevelRequired": 2,
         "name": "Lien",
-        "description": "Sylphrena peut fusionner avec une arme : +2 ATK à Kaladin."
+        "description": "Sylphrena fusionne avec une lance : +2 ATK à Kaladin."
       },
       {
         "linkLevelRequired": 3,
         "name": "Jureur — Lashing",
-        "description": "Cible une unité ennemie : elle ne peut pas attaquer pendant 1 tour."
+        "description": "Une fois par tour : une unité ennemie ciblée ne peut pas attaquer à son prochain tour."
       },
       {
         "linkLevelRequired": 4,
         "name": "Armure Radiante",
-        "description": "Kaladin gagne +15 bouclier. Sylphrena atteint sa forme finale (3/3 vol, indestructible tant que Kaladin est en vie)."
+        "description": "Kaladin gagne +15 bouclier. Sylphrena atteint sa forme finale."
       }
     ]
   },
@@ -50,31 +53,31 @@
     "cost": 1,
     "order": "Windrunner",
     "bondedHeroId": "kaladin-stormblessed",
-    "text": "Spren de Kaladin. Évolue avec le niveau de Lien.",
+    "text": "Spren d'honneur de Kaladin. Évolue avec le niveau de Lien.",
     "levels": {
       "1": {
         "attack": 1,
         "health": 1,
         "keywords": ["vol"],
-        "description": "1/1, vole (ne peut pas être bloquée par des unités sans vol)."
+        "description": "1/1, vole autour de Kaladin."
       },
       "2": {
         "attack": 0,
         "health": 0,
         "keywords": ["arme"],
-        "description": "Se transforme en lance : donne +2 ATK à Kaladin."
+        "description": "Se transforme en lance : +2 ATK à Kaladin."
       },
       "3": {
         "attack": 2,
         "health": 2,
         "keywords": ["vol", "esquive"],
-        "description": "2/2 vol, capacité \"esquive\" (évite la prochaine attaque ciblée)."
+        "description": "2/2, esquive la prochaine attaque ciblée."
       },
       "4": {
         "attack": 3,
         "health": 3,
         "keywords": ["vol", "indestructible-si-heros-vivant"],
-        "description": "3/3 vol, indestructible tant que Kaladin est en vie."
+        "description": "3/3, indestructible tant que Kaladin est en vie."
       }
     }
   },
@@ -82,13 +85,14 @@
   "units": [
     {
       "id": "bridge-four-soldier",
-      "name": "Frère du Pont",
+      "name": "Frère du Pont Quatre",
       "type": "radiant",
       "cost": 2,
       "order": "Windrunner",
       "attack": 2,
       "health": 3,
-      "text": "Couverture : peut s'interposer pour protéger une unité alliée ciblée."
+      "keywords": ["couverture"],
+      "text": "Couverture : peut s'interposer pour protéger un allié ou le héros."
     },
     {
       "id": "lopen",
@@ -98,7 +102,8 @@
       "order": "Windrunner",
       "attack": 2,
       "health": 4,
-      "text": "Obstination : si réduit à 0 PV, reste à 1 PV (une fois par partie)."
+      "keywords": ["obstination"],
+      "text": "Obstination : la première fois qu'il devrait mourir, reste à 1 PV."
     },
     {
       "id": "drehy-skar",
@@ -108,7 +113,7 @@
       "order": "Windrunner",
       "attack": 3,
       "health": 3,
-      "text": "Tandem : double unité. Si Drehy et Skar sont tous deux en jeu, +1 ATK chacun."
+      "text": "Tandem : +1 ATK si un autre Drehy & Skar est en jeu."
     }
   ],
 
@@ -119,15 +124,18 @@
       "type": "surge",
       "cost": 2,
       "order": "Windrunner",
-      "effect": "Une unité alliée gagne \"vol\" jusqu'à la fin du tour."
+      "effectType": "buff",
+      "effectValue": 1,
+      "effect": "Une unité alliée gagne +1/+1."
     },
     {
       "id": "lashing-complet",
       "name": "Lashing Complet",
       "type": "surge",
-      "cost": 4,
+      "cost": 3,
       "order": "Windrunner",
-      "effect": "Une unité ennemie est retirée du combat pendant 1 tour."
+      "effectType": "disable",
+      "effect": "Une unité ennemie ne peut pas attaquer à son prochain tour."
     },
     {
       "id": "contre-gravite",
@@ -135,7 +143,8 @@
       "type": "surge",
       "cost": 3,
       "order": "Windrunner",
-      "effect": "Annule l'attaque d'une unité ennemie."
+      "effectType": "bounce",
+      "effect": "Renvoie une unité ennemie dans la main de son propriétaire."
     }
   ],
 
@@ -146,40 +155,39 @@
       "type": "fabrial",
       "cost": 1,
       "order": "Windrunner",
-      "effect": "+1 Stormlight généré par tour pendant 2 tours.",
-      "durationTurns": 2
+      "effectType": "stormlight",
+      "effectValue": 2,
+      "effect": "Gagne 2 Stormlight ce tour."
     }
   ],
 
   "herauts": [
     {
       "id": "jezrien",
-      "name": "Jezrien",
+      "name": "Jezrien, Roi des Hérauts",
       "type": "heraut",
       "cost": 8,
       "order": "Neutre",
       "attack": 5,
       "health": 5,
-      "effect": "Vent Divin : toutes les unités alliées gagnent vol ce tour. Si Kaladin est le héros, +1 Lien."
+      "effect": "Cri d'arrivée : ton héros gagne 1 niveau de Lien."
     }
   ],
 
   "eclats": [
     {
       "id": "honor",
-      "name": "Honor",
+      "name": "Honneur",
       "type": "eclat",
       "cost": 10,
       "order": "Windrunner",
-      "effect": "Tous les Radiants alliés gagnent +2 Lien instantanément. Pendant 2 tours, les unités alliées ne peuvent pas être ciblées directement. Carte détruite ensuite.",
-      "terrainEffect": "Les unités alliées ne peuvent pas être ciblées directement.",
-      "terrainDurationTurns": 2
+      "effect": "Ton héros gagne 2 niveaux de Lien et +10 bouclier."
     }
   ],
 
   "deck": {
     "id": "windrunners-starter",
-    "name": "Windrunners",
+    "name": "Coureurs du Vent",
     "heroId": "kaladin-stormblessed",
     "startingSprenId": "sylphrena",
     "cardIds": [

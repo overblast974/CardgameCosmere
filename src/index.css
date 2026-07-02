@@ -1,17 +1,52 @@
 :root {
   color-scheme: dark;
   font: 16px/1.4 system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  /* Palette « Haute Tempête » */
+  --bg-deep: #060911;
+  --bg-panel: #101626;
+  --bg-panel-soft: rgba(16, 22, 38, 0.82);
+  --border: #2a3350;
+  --border-soft: #1d2438;
+  --gold: #d8a93a;
+  --gold-soft: rgba(216, 169, 58, 0.35);
+  --storm: #7fd4e8;
+  --storm-soft: rgba(127, 212, 232, 0.25);
+  --text: #e9eaf2;
+  --muted: #8b93ad;
+  --danger: #e05b5b;
+  --danger-soft: rgba(224, 91, 91, 0.45);
+  --green: #58c47f;
+  --violet: #8a6fd8;
+
+  --font-display: Georgia, 'Times New Roman', serif;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
-  background: #0c0d10;
+  height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(ellipse 120% 60% at 50% -10%, rgba(63, 127, 191, 0.18), transparent 60%),
+    radial-gradient(ellipse 80% 50% at 85% 110%, rgba(138, 111, 216, 0.12), transparent 60%),
+    var(--bg-deep);
+  background-attachment: fixed;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
 }
 
 #root {
   min-height: 100svh;
+}
+
+button {
+  font-family: inherit;
+  touch-action: manipulation;
 }

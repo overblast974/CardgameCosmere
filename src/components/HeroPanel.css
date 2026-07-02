@@ -2,15 +2,21 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 10px 14px;
-  border: 1px solid #3a3a44;
-  border-radius: 6px;
-  background: #14151a;
-  min-width: 220px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 50%),
+    var(--bg-panel-soft);
   color: inherit;
   font-family: inherit;
   text-align: left;
   cursor: default;
+  width: 100%;
+  max-width: 520px;
+  align-self: center;
+  flex-shrink: 0;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .hero-panel:disabled {
@@ -18,45 +24,158 @@
 }
 
 .hero-panel--active {
-  border-color: #d8a93a;
+  border-color: var(--gold);
+  box-shadow: 0 0 14px rgba(216, 169, 58, 0.18);
 }
 
 .hero-panel--targetable {
   cursor: pointer;
-  border-color: #b53a3a;
-  box-shadow: 0 0 0 2px rgba(181, 58, 58, 0.4);
+  border-color: var(--danger);
+  animation: hero-target 1.1s ease-in-out infinite;
+}
+
+@keyframes hero-target {
+  0%,
+  100% {
+    box-shadow: 0 0 6px var(--danger-soft);
+  }
+  50% {
+    box-shadow: 0 0 18px var(--danger-soft);
+  }
+}
+
+.hero-panel__top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-panel__portrait {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.15), rgba(0, 0, 0, 0.4));
+  border: 2px solid var(--border);
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.hero-panel--active .hero-panel__portrait {
+  border-color: var(--gold);
 }
 
 .hero-panel__identity {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
 }
 
 .hero-panel__name {
+  font-family: var(--font-display);
   font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .hero-panel__player {
-  font-size: 0.75rem;
-  color: #9a98a6;
+  font-size: 0.7rem;
+  color: var(--muted);
 }
 
-.hero-panel__vitals {
+.hero-panel__orbs {
   display: flex;
-  gap: 12px;
-  font-size: 0.8rem;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .hero-panel__health {
-  color: #4caf6e;
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: radial-gradient(circle at 35% 30%, #6bd694, #1e6e40 75%);
+  border: 1px solid var(--green);
+  color: #04220f;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-weight: 800;
+  font-size: 0.85rem;
 }
 
 .hero-panel__shield {
-  color: #5d9bd8;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: radial-gradient(circle at 35% 30%, #9cc4ec, #2e5d8f 75%);
+  border: 1px solid #5d9bd8;
+  color: #071c30;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-weight: 800;
+  font-size: 0.85rem;
 }
 
 .hero-panel__stormlight {
-  color: #d8633a;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+.hero-panel__gem {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  transform: rotate(45deg);
+  border: 1px solid rgba(127, 212, 232, 0.5);
+  background: transparent;
+  margin: 1px 2px;
+}
+
+.hero-panel__gem--filled {
+  background: radial-gradient(circle at 35% 30%, #b8ecf7, #3092b3 75%);
+  box-shadow: 0 0 5px var(--storm-soft);
+}
+
+.hero-panel__gem-count {
+  margin-left: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--storm);
+}
+
+.hero-panel__bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hero-panel__counts {
+  font-size: 0.72rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Variante compacte (adversaire) : tout sur une ligne dense. */
+.hero-panel--compact {
+  gap: 4px;
+  padding: 6px 10px;
+}
+
+.hero-panel--compact .hero-panel__portrait {
+  width: 32px;
+  height: 32px;
+  font-size: 1.05rem;
+}
+
+.hero-panel--compact .hero-panel__name {
+  font-size: 0.8rem;
 }

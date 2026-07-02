@@ -1,4 +1,5 @@
 import windrunnersRaw from './windrunners.json';
+import skybreakersRaw from './skybreakers.json';
 import type {
   Card,
   Deck,
@@ -7,7 +8,7 @@ import type {
   SprenCard,
 } from '../../types/card';
 
-interface DeckBundle {
+export interface DeckBundle {
   hero: RadiantCard;
   heroDefinition: HeroDefinition;
   starterSpren: SprenCard;
@@ -20,24 +21,42 @@ interface DeckBundle {
 }
 
 const windrunners = windrunnersRaw as unknown as DeckBundle;
+const skybreakers = skybreakersRaw as unknown as DeckBundle;
 
-/** Toutes les cartes (hors héros et Spren de départ) du bundle Windrunner. */
-export const windrunnerCards: Card[] = [
-  windrunners.hero,
-  windrunners.starterSpren,
-  ...windrunners.units,
-  ...windrunners.surges,
-  ...windrunners.fabrials,
-  ...windrunners.herauts,
-  ...windrunners.eclats,
-];
+/** Tous les decks jouables, indexés par l'id de leur deck. */
+export const deckBundles: Record<string, DeckBundle> = {
+  [windrunners.deck.id]: windrunners,
+  [skybreakers.deck.id]: skybreakers,
+};
+
+export const DEFAULT_DECK_IDS = [windrunners.deck.id, skybreakers.deck.id] as const;
 
 export const windrunnerBundle = windrunners;
+export const skybreakerBundle = skybreakers;
 
-const cardsById = new Map(windrunnerCards.map((card) => [card.id, card]));
+function bundleCards(bundle: DeckBundle): Card[] {
+  return [
+    bundle.hero,
+    bundle.starterSpren,
+    ...bundle.units,
+    ...bundle.surges,
+    ...bundle.fabrials,
+    ...bundle.herauts,
+    ...bundle.eclats,
+  ];
+}
+
+/** Toutes les cartes connues, tous decks confondus. */
+export const allCards: Card[] = Object.values(deckBundles).flatMap(bundleCards);
+
+const cardsById = new Map(allCards.map((card) => [card.id, card]));
 
 export function getCardById(id: string): Card | undefined {
   return cardsById.get(id);
+}
+
+export function getDeckBundle(deckId: string): DeckBundle {
+  return deckBundles[deckId] ?? windrunners;
 }
 
 /** Construit la liste de cartes d'un deck (avec doublons) à partir de ses ids. */

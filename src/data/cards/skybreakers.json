@@ -1,0 +1,218 @@
+{
+  "hero": {
+    "id": "szeth-vallano",
+    "name": "Szeth, l'Assassin en Blanc",
+    "type": "radiant",
+    "cost": 0,
+    "order": "Skybreaker",
+    "isHero": true,
+    "attack": 4,
+    "health": 30,
+    "bondedSprenId": "hautjuge",
+    "text": "Niveau 3 « Jugement Céleste » : inflige 3 dégâts à une unité ennemie. Niveau 4 « Perfection du Serment » : +15 bouclier."
+  },
+
+  "heroDefinition": {
+    "cardId": "szeth-vallano",
+    "order": "Skybreaker",
+    "baseHealth": 30,
+    "linkCondition": {
+      "description": "Gagne 1 Lien chaque fois qu'une unité ennemie est détruite par tes attaques ou tes pouvoirs."
+    },
+    "linkGainTrigger": "destruction",
+    "heroPowerType": "smite",
+    "heroPowerName": "Jugement Céleste",
+    "heroPowerValue": 3,
+    "abilities": [
+      {
+        "linkLevelRequired": 1,
+        "name": "Esquisse",
+        "description": "Un hautspren observe Szeth et juge ses actes."
+      },
+      {
+        "linkLevelRequired": 2,
+        "name": "Lien",
+        "description": "Le hautspren guide sa lame : +2 ATK à Szeth."
+      },
+      {
+        "linkLevelRequired": 3,
+        "name": "Jureur — Jugement Céleste",
+        "description": "Une fois par tour : inflige 3 dégâts à une unité ennemie ciblée."
+      },
+      {
+        "linkLevelRequired": 4,
+        "name": "Perfection du Serment",
+        "description": "Szeth gagne +15 bouclier. La justice est absolue."
+      }
+    ]
+  },
+
+  "starterSpren": {
+    "id": "hautjuge",
+    "name": "Hautjuge",
+    "type": "spren",
+    "cost": 1,
+    "order": "Skybreaker",
+    "bondedHeroId": "szeth-vallano",
+    "text": "Hautspren de Szeth. Évolue avec le niveau de Lien.",
+    "levels": {
+      "1": {
+        "attack": 1,
+        "health": 1,
+        "keywords": ["vol"],
+        "description": "1/1, fissure lumineuse dans le ciel."
+      },
+      "2": {
+        "attack": 0,
+        "health": 0,
+        "keywords": ["arme"],
+        "description": "Aiguise la lame : +2 ATK à Szeth."
+      },
+      "3": {
+        "attack": 2,
+        "health": 2,
+        "keywords": ["vol", "verdict"],
+        "description": "2/2, marque les coupables."
+      },
+      "4": {
+        "attack": 3,
+        "health": 3,
+        "keywords": ["vol", "indestructible-si-heros-vivant"],
+        "description": "3/3, indestructible tant que Szeth est en vie."
+      }
+    }
+  },
+
+  "units": [
+    {
+      "id": "acolyte-chasse-ciel",
+      "name": "Acolyte Chasse-Ciel",
+      "type": "radiant",
+      "cost": 2,
+      "order": "Skybreaker",
+      "attack": 3,
+      "health": 1,
+      "keywords": ["zele"],
+      "text": "Zèle : peut attaquer dès son arrivée en jeu."
+    },
+    {
+      "id": "garde-shin",
+      "name": "Garde Shin",
+      "type": "radiant",
+      "cost": 2,
+      "order": "Skybreaker",
+      "attack": 1,
+      "health": 4,
+      "keywords": ["couverture"],
+      "text": "Couverture : peut s'interposer pour protéger un allié ou le héros."
+    },
+    {
+      "id": "executeur-skybreaker",
+      "name": "Exécuteur Chasse-Ciel",
+      "type": "radiant",
+      "cost": 4,
+      "order": "Skybreaker",
+      "attack": 4,
+      "health": 3,
+      "text": "Bras armé de la loi. Nul ne fuit son verdict."
+    }
+  ],
+
+  "surges": [
+    {
+      "id": "division",
+      "name": "Division",
+      "type": "surge",
+      "cost": 3,
+      "order": "Skybreaker",
+      "effectType": "damage",
+      "effectValue": 3,
+      "effect": "Inflige 3 dégâts à une unité ennemie."
+    },
+    {
+      "id": "gravitation",
+      "name": "Gravitation",
+      "type": "surge",
+      "cost": 3,
+      "order": "Skybreaker",
+      "effectType": "disable",
+      "effect": "Cloue une unité ennemie au sol : elle ne peut pas attaquer à son prochain tour."
+    },
+    {
+      "id": "loi-du-ciel",
+      "name": "Loi du Ciel",
+      "type": "surge",
+      "cost": 2,
+      "order": "Skybreaker",
+      "effectType": "draw",
+      "effectValue": 2,
+      "effect": "Pioche 2 cartes."
+    }
+  ],
+
+  "fabrials": [
+    {
+      "id": "sphere-de-jugement",
+      "name": "Sphère de Jugement",
+      "type": "fabrial",
+      "cost": 1,
+      "order": "Skybreaker",
+      "effectType": "stormlight",
+      "effectValue": 2,
+      "effect": "Gagne 2 Stormlight ce tour."
+    }
+  ],
+
+  "herauts": [
+    {
+      "id": "nale",
+      "name": "Nale, Héraut de la Justice",
+      "type": "heraut",
+      "cost": 8,
+      "order": "Neutre",
+      "attack": 5,
+      "health": 5,
+      "effect": "Cri d'arrivée : inflige 2 dégâts à toutes les unités ennemies."
+    }
+  ],
+
+  "eclats": [
+    {
+      "id": "nightblood",
+      "name": "Nightblood",
+      "type": "eclat",
+      "cost": 10,
+      "order": "Skybreaker",
+      "effect": "Détruit toutes les unités ennemies. Ton héros subit 5 dégâts."
+    }
+  ],
+
+  "deck": {
+    "id": "skybreakers-starter",
+    "name": "Chasseurs du Ciel",
+    "heroId": "szeth-vallano",
+    "startingSprenId": "hautjuge",
+    "cardIds": [
+      "acolyte-chasse-ciel",
+      "acolyte-chasse-ciel",
+      "acolyte-chasse-ciel",
+      "garde-shin",
+      "garde-shin",
+      "garde-shin",
+      "executeur-skybreaker",
+      "executeur-skybreaker",
+      "division",
+      "division",
+      "division",
+      "gravitation",
+      "gravitation",
+      "loi-du-ciel",
+      "loi-du-ciel",
+      "loi-du-ciel",
+      "sphere-de-jugement",
+      "sphere-de-jugement",
+      "nale",
+      "nightblood"
+    ]
+  }
+}
