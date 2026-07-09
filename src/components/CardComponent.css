@@ -134,6 +134,24 @@
   display: block;
 }
 
+/* Icône fantasy teintée par la couleur du cadre de la carte. */
+.card__art-icon {
+  display: inline-flex;
+  color: #e6eefaf2;
+  filter: drop-shadow(0 0 5px var(--frame-glow));
+}
+
+.card__art-icon svg {
+  width: 38px;
+  height: 38px;
+  display: block;
+}
+
+.card--compact .card__art-icon svg {
+  width: 30px;
+  height: 30px;
+}
+
 .card--compact .card__art--illustrated {
   height: 64px;
 }

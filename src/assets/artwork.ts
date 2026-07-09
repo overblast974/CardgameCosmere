@@ -20,6 +20,15 @@ const bgModules = import.meta.glob('./bg/*.{webp,png,jpg,jpeg,avif}', {
   import: 'default',
 }) as Record<string, string>;
 
+// Icônes fantasy (game-icons.net, CC-BY 3.0) servant de repli élégant avant
+// que de vraies illustrations soient déposées. Importées en texte brut pour
+// pouvoir les colorier en CSS (fill: currentColor).
+const iconModules = import.meta.glob('./icons/*.svg', {
+  eager: true,
+  query: '?raw',
+  import: 'default',
+}) as Record<string, string>;
+
 function keyByFilename(modules: Record<string, string>): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [path, url] of Object.entries(modules)) {
@@ -32,6 +41,9 @@ function keyByFilename(modules: Record<string, string>): Record<string, string> 
 
 /** URL de l'illustration d'une carte, indexée par l'id de la carte. */
 export const cardArt = keyByFilename(cardModules);
+
+/** Markup SVG de l'icône fantasy d'une carte, indexé par l'id de la carte. */
+export const cardIcons = keyByFilename(iconModules);
 
 /** URL des fonds déposés, indexés par nom de fichier (« main » recommandé). */
 export const backgroundArt = keyByFilename(bgModules);

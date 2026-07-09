@@ -71,6 +71,22 @@
   display: block;
 }
 
+.hero-panel__portrait-icon {
+  display: inline-flex;
+  color: var(--gold);
+}
+
+.hero-panel__portrait-icon svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.hero-panel--compact .hero-panel__portrait-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
 .hero-panel--active .hero-panel__portrait {
   border-color: var(--gold);
 }
