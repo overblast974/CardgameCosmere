@@ -61,6 +61,14 @@
   border: 2px solid var(--border);
   font-size: 1.3rem;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.hero-panel__portrait-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .hero-panel--active .hero-panel__portrait {

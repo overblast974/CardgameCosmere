@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { GameBoard } from './components/GameBoard';
 import { Lobby } from './components/Lobby';
+import { RosharBackground } from './components/RosharBackground';
 import { useGameStore } from './store/gameStore';
 import { useMultiplayerSync } from './firebase/useMultiplayerSync';
 
@@ -31,7 +32,9 @@ function App() {
 
   if (!session) {
     return (
-      <Lobby
+      <>
+        <RosharBackground />
+        <Lobby
         onStartLocal={(deck1Id, deck2Id) => {
           startGame(deck1Id, deck2Id);
           setSession({ mode: 'local' });
@@ -46,19 +49,23 @@ function App() {
           window.history.replaceState(null, '', url.toString());
           setSession({ mode: 'online', matchId, role });
         }}
-      />
+        />
+      </>
     );
   }
 
   return (
-    <GameBoard
-      localPlayerId={session.mode === 'online' ? session.role : 'player1'}
-      hotseat={session.mode === 'local'}
-      onExit={() => {
-        clearMatchParams();
-        setSession(null);
-      }}
-    />
+    <>
+      <RosharBackground />
+      <GameBoard
+        localPlayerId={session.mode === 'online' ? session.role : 'player1'}
+        hotseat={session.mode === 'local'}
+        onExit={() => {
+          clearMatchParams();
+          setSession(null);
+        }}
+      />
+    </>
   );
 }
 

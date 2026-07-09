@@ -1,5 +1,6 @@
 import type { PlayerState } from '../types/game';
 import { LinkGauge } from './LinkGauge';
+import { cardArt } from '../assets/artwork';
 import './HeroPanel.css';
 
 const HERO_GLYPHS: Record<string, string> = {
@@ -28,7 +29,13 @@ export function HeroPanel({ player, isActive, compact, onClick, targetable }: He
       disabled={!onClick}
     >
       <div className="hero-panel__top">
-        <span className="hero-panel__portrait">{HERO_GLYPHS[player.heroCard.id] ?? '🃏'}</span>
+        <span className="hero-panel__portrait">
+          {cardArt[player.heroCard.id] ? (
+            <img className="hero-panel__portrait-img" src={cardArt[player.heroCard.id]} alt="" loading="lazy" />
+          ) : (
+            HERO_GLYPHS[player.heroCard.id] ?? '🃏'
+          )}
+        </span>
         <div className="hero-panel__identity">
           <span className="hero-panel__name">{player.heroCard.name}</span>
           <span className="hero-panel__player">{player.name}</span>

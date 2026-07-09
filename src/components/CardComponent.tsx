@@ -1,4 +1,5 @@
 import type { Card, LinkLevel } from '../types/card';
+import { cardArt } from '../assets/artwork';
 import './CardComponent.css';
 
 const TYPE_LABELS: Record<Card['type'], string> = {
@@ -129,8 +130,12 @@ export function CardComponent({
         <span className="card__cost">{card.cost}</span>
         <span className="card__name">{card.name}</span>
       </div>
-      <div className="card__art">
-        <span>{CARD_GLYPHS[card.id] ?? TYPE_GLYPHS[card.type]}</span>
+      <div className={`card__art${cardArt[card.id] ? ' card__art--illustrated' : ''}`}>
+        {cardArt[card.id] ? (
+          <img className="card__art-img" src={cardArt[card.id]} alt="" loading="lazy" />
+        ) : (
+          <span className="card__art-glyph">{CARD_GLYPHS[card.id] ?? TYPE_GLYPHS[card.type]}</span>
+        )}
         {lashed && <span className="card__status-badge">⛓️ Lashé</span>}
         {guarding && !lashed && <span className="card__status-badge card__status-badge--guard">🛡️ Protège</span>}
       </div>
