@@ -76,6 +76,30 @@
   filter: saturate(0.4) brightness(0.7);
 }
 
+/* Bond de l'attaquant (piloté par la couche d'effets). */
+.card.fx-lunge {
+  animation: fx-lunge 0.34s ease;
+  z-index: 5;
+}
+
+@keyframes fx-lunge {
+  0% {
+    transform: translateY(0);
+  }
+  45% {
+    transform: translateY(-22px) scale(1.06);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card.fx-lunge {
+    animation: none;
+  }
+}
+
 /* ---------- Contenu ---------- */
 
 .card__header {

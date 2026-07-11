@@ -66,6 +66,8 @@ interface CardComponentProps {
   lashed?: boolean;
   guarding?: boolean;
   compact?: boolean;
+  /** Identifiant pour la couche d'effets (positionnement des VFX). */
+  fxId?: string;
   onClick?: () => void;
 }
 
@@ -96,6 +98,7 @@ export function CardComponent({
   lashed,
   guarding,
   compact,
+  fxId,
   onClick,
 }: CardComponentProps) {
   const base = getAttackHealth(card, sprenLevel);
@@ -125,7 +128,7 @@ export function CardComponent({
     .join(' ');
 
   return (
-    <button type="button" className={classes} onClick={onClick} disabled={disabled}>
+    <button type="button" className={classes} onClick={onClick} disabled={disabled} data-fx={fxId}>
       <div className="card__header">
         <span className="card__cost">{card.cost}</span>
         <span className="card__name">{card.name}</span>

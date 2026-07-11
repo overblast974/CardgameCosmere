@@ -27,6 +27,7 @@ export function HeroPanel({ player, isActive, compact, onClick, targetable }: He
       }`}
       onClick={onClick}
       disabled={!onClick}
+      data-fx={`hero:${player.id}`}
     >
       <div className="hero-panel__top">
         <span className="hero-panel__portrait">

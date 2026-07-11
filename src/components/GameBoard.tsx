@@ -4,6 +4,9 @@ import { getDeckBundle } from '../data/cards/loader';
 import { CardComponent } from './CardComponent';
 import { HeroPanel } from './HeroPanel';
 import { PlayerHand } from './PlayerHand';
+import { CombatFX } from './CombatFX';
+import { captureFxRects, diffAndSpawn, lunge } from '../game/combatFx';
+import type { FxKind } from '../store/fxStore';
 import type { UnitInPlay } from '../types/game';
 import type { Card, SurgeCard, FabrialCard } from '../types/card';
 import './GameBoard.css';
@@ -40,6 +43,40 @@ function isTargetedCard(card: SurgeCard | FabrialCard): 'enemy' | 'ally' | null 
     default:
       return null;
   }
+}
+
+/** Couleur d'effet visuel associée à un sort selon son type. */
+function spellFxKind(card: Card): FxKind {
+  if ('effectType' in card) {
+    switch (card.effectType) {
+      case 'damage':
+        return 'damage';
+      case 'disable':
+        return 'disable';
+      case 'bounce':
+        return 'bounce';
+      case 'buff':
+        return 'buff';
+    }
+  }
+  return 'spell';
+}
+
+/**
+ * Exécute une action du jeu en capturant les positions des cibles avant la
+ * mutation, puis déclenche les effets visuels correspondants. `attackerFxId`
+ * anime en plus le bond de l'attaquant.
+ */
+function runWithFx(kind: FxKind, action: () => void, attackerFxId?: string) {
+  const before = useGameStore.getState().game;
+  const rects = captureFxRects();
+  action();
+  const after = useGameStore.getState().game;
+  if (after === before) return; // action invalide : rien ne s'est passé
+  diffAndSpawn(before, after, rects, kind);
+  // setTimeout (et non rAF) pour s'exécuter après le commit React qui réécrit
+  // la className de la carte, sinon le bond serait effacé aussitôt.
+  if (attackerFxId) setTimeout(() => lunge(attackerFxId), 0);
 }
 
 export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }: GameBoardProps) {
@@ -128,7 +165,8 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
         return;
       }
     }
-    playCard(perspectiveId, index);
+    // Cartes sans cible (unités, hérauts, éclats, pioche…) : AoE éventuel animé.
+    runWithFx('damage', () => playCard(perspectiveId, index));
   };
 
   const handleLocalUnitClick = (unit: UnitInPlay) => {
@@ -139,7 +177,9 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
       return;
     }
     if (mode.type === 'card' && mode.side === 'ally') {
-      playTargetedCard(perspectiveId, mode.cardIndex, unit.instanceId);
+      const cardIndex = mode.cardIndex;
+      const kind = spellFxKind(localPlayer.hand[cardIndex]);
+      runWithFx(kind, () => playTargetedCard(perspectiveId, cardIndex, unit.instanceId));
       resetMode();
       return;
     }
@@ -161,20 +201,25 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
   const handleOpponentUnitClick = (unit: UnitInPlay) => {
     if (!isLocalTurn) return;
     if (mode.type === 'attack') {
-      attackUnit(perspectiveId, mode.attackerInstanceId, unit.instanceId);
+      const attackerId = mode.attackerInstanceId;
+      runWithFx('attack', () => attackUnit(perspectiveId, attackerId, unit.instanceId), attackerId);
       resetMode();
     } else if (mode.type === 'power') {
-      triggerHeroPower(perspectiveId, unit.instanceId);
+      const kind: FxKind = heroDefinition.heroPowerType === 'lashing' ? 'disable' : 'damage';
+      runWithFx(kind, () => triggerHeroPower(perspectiveId, unit.instanceId));
       resetMode();
     } else if (mode.type === 'card' && mode.side === 'enemy') {
-      playTargetedCard(perspectiveId, mode.cardIndex, unit.instanceId);
+      const cardIndex = mode.cardIndex;
+      const kind = spellFxKind(localPlayer.hand[cardIndex]);
+      runWithFx(kind, () => playTargetedCard(perspectiveId, cardIndex, unit.instanceId));
       resetMode();
     }
   };
 
   const handleOpponentHeroClick = () => {
     if (!isLocalTurn || mode.type !== 'attack') return;
-    attackHero(perspectiveId, mode.attackerInstanceId);
+    const attackerId = mode.attackerInstanceId;
+    runWithFx('attack', () => attackHero(perspectiveId, attackerId), attackerId);
     resetMode();
   };
 
@@ -196,6 +241,7 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
 
   return (
     <div className="game-board">
+      <CombatFX />
       {passPending && (
         <div className="pass-overlay">
           <div className="pass-overlay__panel">
@@ -260,6 +306,7 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
             <CardComponent
               key={unit.instanceId}
               card={unit.card}
+              fxId={unit.instanceId}
               currentAttack={unit.currentAttack}
               currentHealth={unit.currentHealth}
               lashed={unit.isLashed}
@@ -282,6 +329,7 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
             <div key={unit.instanceId} className="game-board__unit-slot">
               <CardComponent
                 card={unit.card}
+                fxId={unit.instanceId}
                 currentAttack={unit.currentAttack}
                 currentHealth={unit.currentHealth}
                 lashed={unit.isLashed}
