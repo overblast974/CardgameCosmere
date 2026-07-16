@@ -127,12 +127,18 @@ export function CardComponent({
     .filter(Boolean)
     .join(' ');
 
+  const hasStats = attack !== undefined || health !== undefined;
+
   return (
     <button type="button" className={classes} onClick={onClick} disabled={disabled} data-fx={fxId}>
-      <div className="card__header">
-        <span className="card__cost">{card.cost}</span>
+      <span className="card__cost" title="Coût en Stormlight">
+        {card.cost}
+      </span>
+
+      <div className="card__title">
         <span className="card__name">{card.name}</span>
       </div>
+
       <div className={`card__art${cardArt[card.id] ? ' card__art--illustrated' : ''}`}>
         {cardArt[card.id] ? (
           <img className="card__art-img" src={cardArt[card.id]} alt="" loading="lazy" />
@@ -144,13 +150,20 @@ export function CardComponent({
         {lashed && <span className="card__status-badge">⛓️ Lashé</span>}
         {guarding && !lashed && <span className="card__status-badge card__status-badge--guard">🛡️ Protège</span>}
       </div>
-      <div className="card__meta">
+
+      <div className="card__typeline">
         <span>{TYPE_LABELS[card.type]}</span>
-        <span>{ORDER_LABELS[card.order] ?? card.order}</span>
+        <span className="card__typeline-order">{ORDER_LABELS[card.order] ?? card.order}</span>
       </div>
-      {description && <p className="card__text">{description}</p>}
-      {(attack !== undefined || health !== undefined) && (
-        <div className="card__stats">
+
+      {description && (
+        <div className="card__textbox">
+          <p className="card__text">{description}</p>
+        </div>
+      )}
+
+      {hasStats && (
+        <>
           <span className={`card__attack${buffedAttack ? ' card__stat--buffed' : ''}`} title="Attaque">
             {attack ?? '-'}
           </span>
@@ -162,7 +175,7 @@ export function CardComponent({
           >
             {health ?? '-'}
           </span>
-        </div>
+        </>
       )}
     </button>
   );
