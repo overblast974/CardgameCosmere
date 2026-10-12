@@ -1,5 +1,20 @@
 # Illustrations des cartes — guide + prompts prêts à l'emploi
 
+> **État actuel (oct. 2026)** : les 22 cartes, les 4 manifestations
+> (arme/armure), les 5 stades d'évolution de chaque héros et les boucles
+> vidéo (fond de plateau, portraits animés aux niveaux 0/2/4, effets de
+> sorts et de serment) sont déjà générés et intégrés. Ils ont été produits
+> via le connecteur **Higgsfield** : GPT Image 2.5 (qualité medium, 1:1,
+> ~0,5 crédit/image) pour les images, Kling 3.0 (5 s, sans son,
+> ~7,5 crédits/clip) pour les vidéos. Les stades d'évolution utilisent le
+> portrait niveau 0 comme image de référence pour garder le même visage.
+> Les vidéos sont ré-encodées en 480 px (aller-retour pour boucler sans
+> saut) avec ffmpeg : `src/assets/loops/*.mp4` + `*.webm`.
+>
+> Pour **régénérer** une carte, reprends le prompt ci-dessous avec le même
+> suffixe de style, puis remplace le fichier du même nom. Pour un nouveau
+> stade de héros, passe le portrait niveau 0 en `image_references`.
+
 Ce document contient **tout le nécessaire** pour générer les 22 illustrations de
 cartes (via Canva, Leonardo, Midjourney…) et les intégrer au jeu.
 

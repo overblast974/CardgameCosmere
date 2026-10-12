@@ -43,6 +43,34 @@
         "name": "Armure Radiante",
         "description": "Kaladin gagne +15 bouclier. Sylphrena atteint sa forme finale."
       }
+    ],
+    "oaths": {
+      "1": "Vie avant mort. Force avant faiblesse. Voyage avant destination.",
+      "2": "Je protégerai ceux qui ne peuvent se protéger eux-mêmes.",
+      "3": "Je protégerai même ceux que je hais, tant que c'est juste.",
+      "4": "J'accepte qu'il y ait ceux que je ne peux pas protéger."
+    },
+    "manifestations": [
+      {
+        "id": "sylphrena-lance",
+        "name": "Sylphrena, Lance d'Éclat",
+        "type": "manifestation",
+        "kind": "weapon",
+        "linkLevel": 2,
+        "cost": 0,
+        "order": "Windrunner",
+        "effect": "Sylphrena prend la forme d'une lance de lumière : +2 ATK à Kaladin."
+      },
+      {
+        "id": "kaladin-plaque",
+        "name": "Plaque d'Éclat",
+        "type": "manifestation",
+        "kind": "armor",
+        "linkLevel": 4,
+        "cost": 0,
+        "order": "Windrunner",
+        "effect": "Les ventspren s'assemblent en armure vivante : +15 bouclier."
+      }
     ]
   },
 

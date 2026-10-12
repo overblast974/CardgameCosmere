@@ -19,3 +19,10 @@ ne sont pas ajoutées (voir `docs/illustrations.md`).
 Les noms de personnages et l'univers (Roshar, les Chevaliers Radieux, etc.)
 appartiennent à **Brandon Sanderson**. Ce projet est une création de fan à
 usage personnel et non commercial.
+
+## Illustrations et boucles vidéo
+
+Les illustrations des cartes, les stades d'évolution des héros et les boucles
+vidéo (`src/assets/cards`, `src/assets/heroes`, `src/assets/loops`) ont été
+générés avec **Higgsfield** (modèles GPT Image 2.5 et Kling 3.0) à partir de
+prompts décrivant des archétypes génériques. Usage personnel et non commercial.

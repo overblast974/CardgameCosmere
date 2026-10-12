@@ -44,6 +44,34 @@
         "name": "Perfection du Serment",
         "description": "Szeth gagne +15 bouclier. La justice est absolue."
       }
+    ],
+    "oaths": {
+      "1": "Vie avant mort. Force avant faiblesse. Voyage avant destination.",
+      "2": "Je placerai la loi au-dessus de tout.",
+      "3": "Je jure de rechercher la justice et de la laisser me guider, jusqu'à trouver un idéal plus parfait.",
+      "4": "Je deviendrai moi-même la loi que je sers."
+    },
+    "manifestations": [
+      {
+        "id": "hautjuge-lame",
+        "name": "Lame du Hautjuge",
+        "type": "manifestation",
+        "kind": "weapon",
+        "linkLevel": 2,
+        "cost": 0,
+        "order": "Skybreaker",
+        "effect": "Le hautspren se fait lame de lumière : +2 ATK à Szeth."
+      },
+      {
+        "id": "szeth-plaque",
+        "name": "Plaque d'Éclat",
+        "type": "manifestation",
+        "kind": "armor",
+        "linkLevel": 4,
+        "cost": 0,
+        "order": "Skybreaker",
+        "effect": "Une armure de lumière blanche se referme sur Szeth : +15 bouclier."
+      }
     ]
   },
 

@@ -25,6 +25,26 @@
   }
 }
 
+/* ---------- Boucle vidéo de la tempête (par-dessus l'image) ---------- */
+
+.roshar-bg__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: bg-video-in 1.6s ease-out both;
+}
+
+@keyframes bg-video-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* ---------- Haute-tempête en CSS (défaut, sans image) ---------- */
 
 .roshar-bg__storm {

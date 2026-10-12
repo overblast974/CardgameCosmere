@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { isFirebaseConfigured } from '../firebase/config';
 import { deckBundles, DEFAULT_DECK_IDS } from '../data/cards/loader';
+import { cardArt } from '../assets/artwork';
 import './Lobby.css';
 
 interface LobbyProps {
@@ -37,7 +38,11 @@ function DeckPicker({ label, value, onChange }: DeckPickerProps) {
             }`}
             onClick={() => onChange(bundle.deck.id)}
           >
-            <span className="deck-picker__glyph">{HERO_GLYPHS[bundle.hero.id] ?? '🃏'}</span>
+            {cardArt[bundle.hero.id] ? (
+              <img className="deck-picker__art" src={cardArt[bundle.hero.id]} alt="" />
+            ) : (
+              <span className="deck-picker__glyph">{HERO_GLYPHS[bundle.hero.id] ?? '🃏'}</span>
+            )}
             <span className="deck-picker__hero">{bundle.hero.name}</span>
             <span className="deck-picker__deck-name">{bundle.deck.name}</span>
           </button>

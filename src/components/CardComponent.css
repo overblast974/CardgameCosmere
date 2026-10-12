@@ -334,7 +334,45 @@
   --frame-glow: rgba(216, 169, 58, 0.4);
 }
 
-/* Reflet mouvant sur les cartes légendaires (Éclats). */
+/* Manifestations (arme / armure du Spren) : cadre argent lumineux. */
+.card--manifestation {
+  --frame: #b9c6d8;
+  --frame-glow: rgba(207, 216, 230, 0.4);
+}
+
+.card--manifestation .card__art {
+  background:
+    radial-gradient(circle at 50% 60%, rgba(207, 216, 230, 0.22), transparent 70%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.42));
+}
+
+.card__cost--link {
+  color: #f4efff;
+  font-size: 0.72rem;
+  background: radial-gradient(circle at 36% 30%, #c3b2f2, #5e46b5 70%);
+  border-color: #b9a6f0;
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.65),
+    0 0 8px rgba(138, 111, 216, 0.5),
+    inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+/* Manifestation pas encore débloquée. */
+.card--locked {
+  filter: grayscale(0.9) brightness(0.55);
+}
+
+.card--locked .card__art-img {
+  filter: blur(1.5px);
+}
+
+.card__status-badge--locked {
+  color: #e6e1ff;
+  background: rgba(60, 45, 110, 0.92);
+}
+
+/* Reflet mouvant sur les cartes légendaires (Éclats) et les manifestations. */
+.card--manifestation:not(.card--locked)::after,
 .card--eclat::after {
   content: '';
   position: absolute;
@@ -416,6 +454,7 @@
   .card,
   .card.fx-lunge,
   .card--eclat::after,
+  .card--manifestation::after,
   .card--targetable {
     animation: none;
   }

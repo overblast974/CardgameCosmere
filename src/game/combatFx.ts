@@ -1,5 +1,7 @@
 import { useFxStore } from '../store/fxStore';
 import type { FxKind } from '../store/fxStore';
+import { hasVideo, prefersStillMedia, vfxClips } from '../assets/artwork';
+import type { VfxClip } from '../assets/artwork';
 import type { GameState, UnitInPlay } from '../types/game';
 
 export function heroFxId(playerId: string): string {
@@ -10,6 +12,11 @@ interface Point {
   x: number;
   y: number;
 }
+
+/** Taille (px) du clip vidéo d'effet posé sur une unité. */
+const UNIT_CLIP_SIZE = 190;
+/** Taille (px) du clip vidéo d'effet posé sur le panneau du héros. */
+const HERO_CLIP_SIZE = 260;
 
 /** Centre viewport d'un élément porteur d'un attribut data-fx. */
 function centerOf(el: Element): Point {
@@ -30,6 +37,18 @@ export function captureFxRects(): Record<string, Point> {
 function liveRect(fxId: string): Point | null {
   const el = document.querySelector(`[data-fx="${fxId}"]`);
   return el ? centerOf(el) : null;
+}
+
+/** Joue un clip vidéo d'effet centré sur un point (si le clip existe et que l'utilisateur accepte l'animation). */
+export function playClipAt(pos: Point, clip: VfxClip, size = UNIT_CLIP_SIZE): void {
+  if (prefersStillMedia || !hasVideo(vfxClips[clip])) return;
+  useFxStore.getState().spawnClip({ ...pos, clip, size });
+}
+
+/** Joue un clip vidéo d'effet sur un élément porteur de data-fx (ex. le héros du joueur). */
+export function playClipOn(fxId: string, clip: VfxClip): void {
+  const pos = liveRect(fxId);
+  if (pos) playClipAt(pos, clip, fxId.startsWith('hero:') ? HERO_CLIP_SIZE : UNIT_CLIP_SIZE);
 }
 
 /** Petit bond de l'attaquant vers le haut (le joueur actif est toujours en bas). */
@@ -58,13 +77,15 @@ function allUnits(game: GameState): UnitRef[] {
 /**
  * Compare l'état avant/après une action et déclenche les effets visuels
  * correspondants (dégâts flottants, morts, buffs, entraves, gains de Lien).
- * `kind` colore les effets selon l'origine (attaque, type de sort, pouvoir).
+ * `kind` colore les effets selon l'origine (attaque, type de sort, pouvoir) ;
+ * `clip` joue en plus un clip vidéo d'effet sur chaque unité touchée.
  */
 export function diffAndSpawn(
   before: GameState,
   after: GameState,
   rects: Record<string, Point>,
   kind: FxKind = 'attack',
+  clip?: VfxClip,
 ): void {
   const spawn = useFxStore.getState().spawn;
 
@@ -75,6 +96,7 @@ export function diffAndSpawn(
     const pos = rects[unit.instanceId];
     if (!pos) continue;
     const now = afterUnits.get(unit.instanceId);
+    let affected = true;
 
     if (!now) {
       // L'unité a quitté le plateau : renvoi (bounce) ou destruction.
@@ -84,19 +106,22 @@ export function diffAndSpawn(
         spawn({ ...pos, kind: 'death' });
         spawn({ ...pos, kind: 'damage', text: `-${unit.currentHealth}` });
       }
-      continue;
+    } else {
+      const hpDelta = unit.currentHealth - now.currentHealth;
+      if (hpDelta > 0) {
+        spawn({ ...pos, kind: kind === 'attack' ? 'damage' : kind, text: `-${hpDelta}` });
+      } else if (now.currentHealth > unit.currentHealth || now.currentAttack > unit.currentAttack) {
+        const atk = now.currentAttack - unit.currentAttack;
+        const hp = now.currentHealth - unit.currentHealth;
+        spawn({ ...pos, kind: 'buff', text: `+${atk}/+${hp}` });
+      } else if (now.isLashed && !unit.isLashed) {
+        spawn({ ...pos, kind: 'disable', text: '⊘' });
+      } else {
+        affected = false;
+      }
     }
 
-    const hpDelta = unit.currentHealth - now.currentHealth;
-    if (hpDelta > 0) {
-      spawn({ ...pos, kind: kind === 'attack' ? 'damage' : kind, text: `-${hpDelta}` });
-    } else if (now.currentHealth > unit.currentHealth || now.currentAttack > unit.currentAttack) {
-      const atk = now.currentAttack - unit.currentAttack;
-      const hp = now.currentHealth - unit.currentHealth;
-      spawn({ ...pos, kind: 'buff', text: `+${atk}/+${hp}` });
-    } else if (now.isLashed && !unit.isLashed) {
-      spawn({ ...pos, kind: 'disable', text: '⊘' });
-    }
+    if (affected && clip) playClipAt(pos, clip);
   }
 
   // Héros : dégâts (vie + bouclier) et gains de Lien.
