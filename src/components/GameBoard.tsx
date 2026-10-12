@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useGameStore } from '../store/gameStore';
+import { useGameStore, getEffectiveAttack } from '../store/gameStore';
 import { useFxStore } from '../store/fxStore';
 import { getDeckBundle } from '../data/cards/loader';
 import { CardComponent } from './CardComponent';
@@ -389,7 +389,7 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
               key={unit.instanceId}
               card={unit.card}
               fxId={unit.instanceId}
-              currentAttack={unit.currentAttack}
+              currentAttack={getEffectiveAttack(opponent, unit)}
               currentHealth={unit.currentHealth}
               lashed={unit.isLashed}
               guarding={Boolean(unit.guarding)}
@@ -412,7 +412,7 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
               <CardComponent
                 card={unit.card}
                 fxId={unit.instanceId}
-                currentAttack={unit.currentAttack}
+                currentAttack={getEffectiveAttack(localPlayer, unit)}
                 currentHealth={unit.currentHealth}
                 lashed={unit.isLashed}
                 guarding={Boolean(unit.guarding)}

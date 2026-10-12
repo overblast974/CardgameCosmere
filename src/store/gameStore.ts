@@ -6,7 +6,14 @@ import { buildDeckCards, getDeckBundle, DEFAULT_DECK_IDS } from '../data/cards/l
 const STARTING_HAND_SIZE = 4;
 const MAX_STORMLIGHT = 10;
 const MAX_LINK_LEVEL: LinkLevel = 4;
+/** Niveau 4 (Plaque d'Éclat) : bouclier gagné en prononçant le serment. */
 const ARMOR_SHIELD_BONUS = 15;
+/** Niveau 2 (Souffle de Stormlight) : soin immédiat du héros. */
+const OATH_HEAL = 5;
+/** Niveau 2 : aura permanente, +1 ATK à toutes les unités alliées. */
+const OATH_ALLY_ATTACK_BONUS = 1;
+/** Niveau 3 (Lame d'Éclat) : ATK du héros. */
+const BLADE_HERO_ATTACK_BONUS = 2;
 const NIGHTBLOOD_SELF_DAMAGE = 5;
 
 function shuffle<T>(items: T[]): T[] {
@@ -59,20 +66,33 @@ function hasKeyword(card: Card, keyword: string): boolean {
   return card.keywords?.includes(keyword as never) ?? false;
 }
 
-/** Calcule l'ATK effective d'une unité (Tandem de Drehy & Skar). */
+/** Calcule l'ATK effective d'une unité (Tandem de Drehy & Skar, Souffle de Stormlight niveau 2). */
 function getEffectiveAttack(player: PlayerState, unit: UnitInPlay): number {
   let attack = unit.currentAttack;
   if (unit.card.id === 'drehy-skar') {
     const tandemCount = player.board.filter((u) => u.card.id === 'drehy-skar').length;
     if (tandemCount >= 2) attack += 1;
   }
+  if (player.linkLevel >= 2) attack += OATH_ALLY_ATTACK_BONUS;
   return attack;
 }
 
-/** Calcule l'ATK effective du héros (Spren niveau 2 : +2 ATK). */
+/** Calcule l'ATK effective du héros (Lame d'Éclat au niveau 3 : +2 ATK). */
 function getEffectiveHeroAttack(player: PlayerState): number {
   const baseAttack = player.heroCard.type === 'radiant' ? player.heroCard.attack : 0;
-  return baseAttack + (player.linkLevel >= 2 ? 2 : 0);
+  return baseAttack + (player.linkLevel >= 3 ? BLADE_HERO_ATTACK_BONUS : 0);
+}
+
+/**
+ * Applique les récompenses immédiates des serments franchis entre deux niveaux :
+ * niveau 2 soigne le héros, niveau 4 lui donne la Plaque (bouclier). L'aura
+ * d'ATK du niveau 2 et la Lame du niveau 3 sont, elles, calculées à la volée.
+ */
+function applyOathRewards(player: PlayerState, fromLevel: LinkLevel, toLevel: LinkLevel): PlayerState {
+  let updated = { ...player, linkLevel: toLevel };
+  if (fromLevel < 2 && toLevel >= 2) updated = { ...updated, heroHealth: updated.heroHealth + OATH_HEAL };
+  if (fromLevel < 4 && toLevel >= 4) updated = { ...updated, heroShield: updated.heroShield + ARMOR_SHIELD_BONUS };
+  return updated;
 }
 
 function findOtherPlayerId(game: GameState, playerId: string): string {
@@ -82,12 +102,7 @@ function findOtherPlayerId(game: GameState, playerId: string): string {
 function gainLink(player: PlayerState, levels = 1): PlayerState {
   const newLevel = Math.min(MAX_LINK_LEVEL, player.linkLevel + levels) as LinkLevel;
   if (newLevel === player.linkLevel) return player;
-  const reachedArmor = newLevel === 4 && player.linkLevel < 4;
-  return {
-    ...player,
-    linkLevel: newLevel,
-    heroShield: reachedArmor ? player.heroShield + ARMOR_SHIELD_BONUS : player.heroShield,
-  };
+  return applyOathRewards(player, player.linkLevel, newLevel);
 }
 
 /** Gain de Lien conditionné au déclencheur de l'ordre du héros. */
@@ -378,17 +393,12 @@ export const useGameStore = create<GameStore>((set) => ({
     set((state) => {
       const player = state.game.players[playerId];
       if (!player) return state;
-      const reachedArmor = level === 4 && player.linkLevel < 4;
       return {
         game: {
           ...state.game,
           players: {
             ...state.game.players,
-            [playerId]: {
-              ...player,
-              linkLevel: level,
-              heroShield: reachedArmor ? player.heroShield + ARMOR_SHIELD_BONUS : player.heroShield,
-            },
+            [playerId]: applyOathRewards(player, player.linkLevel, level),
           },
         },
       };

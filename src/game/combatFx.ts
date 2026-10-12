@@ -132,6 +132,8 @@ export function diffAndSpawn(
     if (!pos) continue;
     const dmg = b.heroHealth + b.heroShield - (a.heroHealth + a.heroShield);
     if (dmg > 0) spawn({ ...pos, kind: 'damage', text: `-${dmg}` });
+    const heal = a.heroHealth - b.heroHealth;
+    if (heal > 0) spawn({ ...pos, kind: 'buff', text: `+${heal}` });
     if (a.linkLevel > b.linkLevel) spawn({ ...pos, kind: 'link', text: '✦ Lien' });
   }
 }

@@ -49,8 +49,8 @@ Ces cartes ne sont pas dans le deck : elles apparaissent à côté du héros
 quand il prononce le serment correspondant (voir `manifestations` dans le
 JSON du deck).
 
-- `sylphrena-lance.webp` (Lien 2) · `kaladin-plaque.webp` (Lien 4)
-- `hautjuge-lame.webp` (Lien 2) · `szeth-plaque.webp` (Lien 4)
+- `sylphrena-lance.webp` (Lien 3) · `kaladin-plaque.webp` (Lien 4)
+- `hautjuge-lame.webp` (Lien 3) · `szeth-plaque.webp` (Lien 4)
 
 ## Stades d'évolution et boucles vidéo
 
