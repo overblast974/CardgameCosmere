@@ -9,6 +9,7 @@ const TYPE_LABELS: Record<Card['type'], string> = {
   fabrial: 'Fabrial',
   heraut: 'Héraut',
   eclat: 'Éclat',
+  manifestation: 'Manifestation',
 };
 
 const ORDER_LABELS: Record<string, string> = {
@@ -41,6 +42,10 @@ const CARD_GLYPHS: Record<string, string> = {
   'sphere-de-jugement': '💎',
   nale: '👑',
   nightblood: '🖤',
+  'sylphrena-lance': '🔱',
+  'kaladin-plaque': '🛡️',
+  'hautjuge-lame': '🗡️',
+  'szeth-plaque': '🛡️',
 };
 
 const TYPE_GLYPHS: Record<Card['type'], string> = {
@@ -50,6 +55,7 @@ const TYPE_GLYPHS: Record<Card['type'], string> = {
   fabrial: '💎',
   heraut: '👑',
   eclat: '🌟',
+  manifestation: '🗡️',
 };
 
 interface CardComponentProps {
@@ -65,7 +71,11 @@ interface CardComponentProps {
   exhausted?: boolean;
   lashed?: boolean;
   guarding?: boolean;
+  /** Manifestation pas encore débloquée : grisée avec le niveau de Lien requis. */
+  locked?: boolean;
   compact?: boolean;
+  /** Illustration à afficher à la place de celle de la carte (ex. stade d'évolution d'un héros). */
+  artUrl?: string;
   /** Identifiant pour la couche d'effets (positionnement des VFX). */
   fxId?: string;
   onClick?: () => void;
@@ -86,6 +96,21 @@ function getAttackHealth(card: Card, sprenLevel: LinkLevel = 0): { attack?: numb
   }
 }
 
+function getDescription(card: Card, sprenLevel: LinkLevel): string | undefined {
+  switch (card.type) {
+    case 'surge':
+    case 'fabrial':
+    case 'heraut':
+    case 'eclat':
+    case 'manifestation':
+      return card.effect;
+    case 'spren':
+      return sprenLevel > 0 ? card.levels[sprenLevel as 1 | 2 | 3 | 4].description : card.text;
+    default:
+      return card.text;
+  }
+}
+
 export function CardComponent({
   card,
   sprenLevel = 0,
@@ -97,7 +122,9 @@ export function CardComponent({
   exhausted,
   lashed,
   guarding,
+  locked,
   compact,
+  artUrl,
   fxId,
   onClick,
 }: CardComponentProps) {
@@ -108,12 +135,8 @@ export function CardComponent({
   const damagedHealth = base.health !== undefined && health !== undefined && health < base.health;
   const buffedHealth = base.health !== undefined && health !== undefined && health > base.health;
 
-  const description =
-    card.type === 'surge' || card.type === 'fabrial' || card.type === 'heraut' || card.type === 'eclat'
-      ? card.effect
-      : card.type === 'spren' && sprenLevel > 0
-        ? card.levels[sprenLevel as 1 | 2 | 3 | 4].description
-        : card.text;
+  const description = getDescription(card, sprenLevel);
+  const art = artUrl ?? cardArt[card.id];
 
   const classes = [
     'card',
@@ -122,6 +145,7 @@ export function CardComponent({
     targetable ? 'card--targetable' : '',
     exhausted ? 'card--exhausted' : '',
     lashed ? 'card--lashed' : '',
+    locked ? 'card--locked' : '',
     compact ? 'card--compact' : '',
   ]
     .filter(Boolean)
@@ -131,17 +155,23 @@ export function CardComponent({
 
   return (
     <button type="button" className={classes} onClick={onClick} disabled={disabled} data-fx={fxId}>
-      <span className="card__cost" title="Coût en Stormlight">
-        {card.cost}
-      </span>
+      {card.type === 'manifestation' ? (
+        <span className="card__cost card__cost--link" title="Niveau de Lien requis">
+          ✦{card.linkLevel}
+        </span>
+      ) : (
+        <span className="card__cost" title="Coût en Stormlight">
+          {card.cost}
+        </span>
+      )}
 
       <div className="card__title">
         <span className="card__name">{card.name}</span>
       </div>
 
-      <div className={`card__art${cardArt[card.id] ? ' card__art--illustrated' : ''}`}>
-        {cardArt[card.id] ? (
-          <img className="card__art-img" src={cardArt[card.id]} alt="" loading="lazy" />
+      <div className={`card__art${art ? ' card__art--illustrated' : ''}`}>
+        {art ? (
+          <img className="card__art-img" src={art} alt="" loading="lazy" />
         ) : cardIcons[card.id] ? (
           <span className="card__art-icon" dangerouslySetInnerHTML={{ __html: cardIcons[card.id] }} />
         ) : (
@@ -149,10 +179,16 @@ export function CardComponent({
         )}
         {lashed && <span className="card__status-badge">⛓️ Lashé</span>}
         {guarding && !lashed && <span className="card__status-badge card__status-badge--guard">🛡️ Protège</span>}
+        {locked && card.type === 'manifestation' && (
+          <span className="card__status-badge card__status-badge--locked">🔒 Lien {card.linkLevel}</span>
+        )}
       </div>
 
       <div className="card__typeline">
-        <span>{TYPE_LABELS[card.type]}</span>
+        <span>
+          {TYPE_LABELS[card.type]}
+          {card.type === 'manifestation' && (card.kind === 'weapon' ? ' · Arme' : ' · Armure')}
+        </span>
         <span className="card__typeline-order">{ORDER_LABELS[card.order] ?? card.order}</span>
       </div>
 

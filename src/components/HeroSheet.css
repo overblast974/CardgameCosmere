@@ -1,0 +1,227 @@
+.hero-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 65;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: rgba(3, 5, 10, 0.82);
+  backdrop-filter: blur(4px);
+  animation: hero-sheet-in 0.2s ease-out;
+}
+
+@keyframes hero-sheet-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.hero-sheet__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: min(100%, 420px);
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 18px 16px 20px;
+  border-radius: 16px;
+  border: 1px solid var(--gold-soft);
+  background: var(--bg-panel);
+  box-shadow: 0 0 40px rgba(216, 169, 58, 0.12), 0 20px 50px rgba(0, 0, 0, 0.7);
+  text-align: center;
+}
+
+.hero-sheet__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.hero-sheet__portrait {
+  position: relative;
+  flex-shrink: 0; /* sinon le panneau défilant l'écrase (enfants en absolu) */
+  width: 200px;
+  height: 200px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid var(--border);
+  background: #0a0f1c;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+}
+
+.hero-sheet__portrait--level-2,
+.hero-sheet__portrait--level-3 {
+  border-color: var(--storm);
+  box-shadow: 0 0 24px rgba(127, 212, 232, 0.35), 0 8px 30px rgba(0, 0, 0, 0.7);
+}
+
+.hero-sheet__portrait--level-4 {
+  border-color: var(--gold);
+  box-shadow: 0 0 34px rgba(216, 169, 58, 0.45), 0 8px 30px rgba(0, 0, 0, 0.7);
+}
+
+.hero-sheet__portrait-img,
+.hero-sheet__portrait-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-sheet__name {
+  margin: 6px 0 0;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  color: var(--gold);
+}
+
+.hero-sheet__sub {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.hero-sheet__stats {
+  display: flex;
+  gap: 8px;
+}
+
+.hero-sheet__stat {
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  border: 1px solid;
+}
+
+.hero-sheet__stat--attack {
+  background: radial-gradient(circle at 35% 30%, #ffb27a, #c65a26 75%);
+  border-color: #f0a468;
+  color: #3a1200;
+}
+
+.hero-sheet__stat--health {
+  background: radial-gradient(circle at 35% 30%, #6bd694, #1e6e40 75%);
+  border-color: var(--green);
+  color: #04220f;
+}
+
+.hero-sheet__stat--shield {
+  background: radial-gradient(circle at 35% 30%, #9cc4ec, #2e5d8f 75%);
+  border-color: #5d9bd8;
+  color: #071c30;
+}
+
+.hero-sheet__condition {
+  margin: 0;
+  font-size: 0.74rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.hero-sheet__oaths {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.hero-sheet__oath {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-soft);
+  background: rgba(255, 255, 255, 0.02);
+  opacity: 0.55;
+}
+
+.hero-sheet__oath--sworn {
+  opacity: 1;
+  border-color: rgba(138, 111, 216, 0.5);
+  background: rgba(138, 111, 216, 0.08);
+}
+
+.hero-sheet__oath-pip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--violet);
+  color: var(--violet);
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+
+.hero-sheet__oath--sworn .hero-sheet__oath-pip {
+  background: radial-gradient(circle at 35% 30%, #c3b2f2, var(--violet) 75%);
+  color: #fff;
+  box-shadow: 0 0 8px rgba(138, 111, 216, 0.6);
+}
+
+.hero-sheet__oath-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+.hero-sheet__oath-body em {
+  font-family: var(--font-display);
+  color: #f1ebda;
+}
+
+.hero-sheet__oath-ability {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.hero-sheet__oath-ability strong {
+  color: var(--violet);
+}
+
+.hero-sheet__manifestations {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.hero-sheet__manifestations .card {
+  cursor: default;
+}
+
+.hero-sheet__manifestations .card:disabled {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-sheet {
+    animation: none;
+  }
+}

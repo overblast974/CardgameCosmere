@@ -9,9 +9,8 @@
     "attack": 4,
     "health": 30,
     "bondedSprenId": "hautjuge",
-    "text": "Niveau 3 « Jugement Céleste » : inflige 3 dégâts à une unité ennemie. Niveau 4 « Perfection du Serment » : +15 bouclier."
+    "text": "Niveau 2 « Souffle de Stormlight » : +5 PV et +1 ATK aux alliés. Niveau 3 « Jugement Céleste » : inflige 3 dégâts à une unité ennemie. Niveau 4 « Perfection du Serment » : +15 bouclier."
   },
-
   "heroDefinition": {
     "cardId": "szeth-vallano",
     "order": "Skybreaker",
@@ -31,22 +30,49 @@
       },
       {
         "linkLevelRequired": 2,
-        "name": "Lien",
-        "description": "Le hautspren guide sa lame : +2 ATK à Szeth."
+        "name": "Souffle de Stormlight",
+        "description": "Szeth s'imprègne de Stormlight : +5 PV immédiats, et tant que le Lien tient, +1 ATK à toutes ses unités."
       },
       {
         "linkLevelRequired": 3,
-        "name": "Jureur — Jugement Céleste",
-        "description": "Une fois par tour : inflige 3 dégâts à une unité ennemie ciblée."
+        "name": "Jureur — Lame d'Éclat",
+        "description": "Le hautspren se fait Lame (+2 ATK à Szeth) et débloque Jugement Céleste : une fois par tour, inflige 3 dégâts à une unité ennemie ciblée."
       },
       {
         "linkLevelRequired": 4,
         "name": "Perfection du Serment",
         "description": "Szeth gagne +15 bouclier. La justice est absolue."
       }
+    ],
+    "oaths": {
+      "1": "Vie avant mort. Force avant faiblesse. Voyage avant destination.",
+      "2": "Je placerai la loi au-dessus de tout.",
+      "3": "Je jure de rechercher la justice et de la laisser me guider, jusqu'à trouver un idéal plus parfait.",
+      "4": "Je deviendrai moi-même la loi que je sers."
+    },
+    "manifestations": [
+      {
+        "id": "hautjuge-lame",
+        "name": "Lame du Hautjuge",
+        "type": "manifestation",
+        "kind": "weapon",
+        "linkLevel": 3,
+        "cost": 0,
+        "order": "Skybreaker",
+        "effect": "Au 3e Idéal, le hautspren se fait Lame d'Éclat : +2 ATK à Szeth et débloque Jugement Céleste (une fois par tour)."
+      },
+      {
+        "id": "szeth-plaque",
+        "name": "Plaque d'Éclat",
+        "type": "manifestation",
+        "kind": "armor",
+        "linkLevel": 4,
+        "cost": 0,
+        "order": "Skybreaker",
+        "effect": "Une armure de lumière blanche se referme sur Szeth : +15 bouclier."
+      }
     ]
   },
-
   "starterSpren": {
     "id": "hautjuge",
     "name": "Hautjuge",
@@ -59,30 +85,38 @@
       "1": {
         "attack": 1,
         "health": 1,
-        "keywords": ["vol"],
+        "keywords": [
+          "vol"
+        ],
         "description": "1/1, fissure lumineuse dans le ciel."
       },
       "2": {
-        "attack": 0,
-        "health": 0,
-        "keywords": ["arme"],
-        "description": "Aiguise la lame : +2 ATK à Szeth."
+        "attack": 1,
+        "health": 2,
+        "keywords": [
+          "vol"
+        ],
+        "description": "1/2, infuse Szeth et ses alliés de Stormlight."
       },
       "3": {
-        "attack": 2,
-        "health": 2,
-        "keywords": ["vol", "verdict"],
-        "description": "2/2, marque les coupables."
+        "attack": 0,
+        "health": 0,
+        "keywords": [
+          "arme"
+        ],
+        "description": "Se change en Lame d'Éclat : +2 ATK à Szeth."
       },
       "4": {
         "attack": 3,
         "health": 3,
-        "keywords": ["vol", "indestructible-si-heros-vivant"],
+        "keywords": [
+          "vol",
+          "indestructible-si-heros-vivant"
+        ],
         "description": "3/3, indestructible tant que Szeth est en vie."
       }
     }
   },
-
   "units": [
     {
       "id": "acolyte-chasse-ciel",
@@ -92,7 +126,9 @@
       "order": "Skybreaker",
       "attack": 3,
       "health": 1,
-      "keywords": ["zele"],
+      "keywords": [
+        "zele"
+      ],
       "text": "Zèle : peut attaquer dès son arrivée en jeu."
     },
     {
@@ -103,7 +139,9 @@
       "order": "Skybreaker",
       "attack": 1,
       "health": 4,
-      "keywords": ["couverture"],
+      "keywords": [
+        "couverture"
+      ],
       "text": "Couverture : peut s'interposer pour protéger un allié ou le héros."
     },
     {
@@ -117,7 +155,6 @@
       "text": "Bras armé de la loi. Nul ne fuit son verdict."
     }
   ],
-
   "surges": [
     {
       "id": "division",
@@ -149,7 +186,6 @@
       "effect": "Pioche 2 cartes."
     }
   ],
-
   "fabrials": [
     {
       "id": "sphere-de-jugement",
@@ -162,7 +198,6 @@
       "effect": "Gagne 2 Stormlight ce tour."
     }
   ],
-
   "herauts": [
     {
       "id": "nale",
@@ -175,7 +210,6 @@
       "effect": "Cri d'arrivée : inflige 2 dégâts à toutes les unités ennemies."
     }
   ],
-
   "eclats": [
     {
       "id": "nightblood",
@@ -186,7 +220,6 @@
       "effect": "Détruit toutes les unités ennemies. Ton héros subit 5 dégâts."
     }
   ],
-
   "deck": {
     "id": "skybreakers-starter",
     "name": "Chasseurs du Ciel",

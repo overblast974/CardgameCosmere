@@ -170,3 +170,19 @@
 .deck-picker__option--selected .deck-picker__deck-name {
   color: var(--storm);
 }
+
+/* Portrait illustré du héros dans le sélecteur de deck. */
+.deck-picker__art {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
+  display: block;
+}
+
+.deck-picker__option--selected .deck-picker__art {
+  border-color: var(--gold);
+  box-shadow: 0 0 14px var(--gold-soft);
+}

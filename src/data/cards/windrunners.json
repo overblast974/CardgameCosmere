@@ -9,9 +9,8 @@
     "attack": 3,
     "health": 30,
     "bondedSprenId": "sylphrena",
-    "text": "Niveau 3 « Lashing » : une unité ennemie ne peut pas attaquer à son prochain tour. Niveau 4 « Armure Radiante » : +15 bouclier."
+    "text": "Niveau 2 « Souffle de Stormlight » : +5 PV et +1 ATK aux alliés. Niveau 3 « Lashing » : une unité ennemie ne peut pas attaquer à son prochain tour. Niveau 4 « Armure Radiante » : +15 bouclier."
   },
-
   "heroDefinition": {
     "cardId": "kaladin-stormblessed",
     "order": "Windrunner",
@@ -30,22 +29,49 @@
       },
       {
         "linkLevelRequired": 2,
-        "name": "Lien",
-        "description": "Sylphrena fusionne avec une lance : +2 ATK à Kaladin."
+        "name": "Souffle de Stormlight",
+        "description": "Kaladin s'imprègne de Stormlight : +5 PV immédiats, et tant que le Lien tient, +1 ATK à toutes ses unités."
       },
       {
         "linkLevelRequired": 3,
-        "name": "Jureur — Lashing",
-        "description": "Une fois par tour : une unité ennemie ciblée ne peut pas attaquer à son prochain tour."
+        "name": "Jureur — Lame d'Éclat",
+        "description": "Sylphrena devient Lance d'Éclat (+2 ATK à Kaladin) et débloque Lashing : une fois par tour, une unité ennemie ciblée ne peut pas attaquer à son prochain tour."
       },
       {
         "linkLevelRequired": 4,
         "name": "Armure Radiante",
         "description": "Kaladin gagne +15 bouclier. Sylphrena atteint sa forme finale."
       }
+    ],
+    "oaths": {
+      "1": "Vie avant mort. Force avant faiblesse. Voyage avant destination.",
+      "2": "Je protégerai ceux qui ne peuvent se protéger eux-mêmes.",
+      "3": "Je protégerai même ceux que je hais, tant que c'est juste.",
+      "4": "J'accepte qu'il y ait ceux que je ne peux pas protéger."
+    },
+    "manifestations": [
+      {
+        "id": "sylphrena-lance",
+        "name": "Sylphrena, Lance d'Éclat",
+        "type": "manifestation",
+        "kind": "weapon",
+        "linkLevel": 3,
+        "cost": 0,
+        "order": "Windrunner",
+        "effect": "Au 3e Idéal, Sylphrena prend la forme d'une lance de lumière : +2 ATK à Kaladin et débloque Lashing (une fois par tour)."
+      },
+      {
+        "id": "kaladin-plaque",
+        "name": "Plaque d'Éclat",
+        "type": "manifestation",
+        "kind": "armor",
+        "linkLevel": 4,
+        "cost": 0,
+        "order": "Windrunner",
+        "effect": "Les ventspren s'assemblent en armure vivante : +15 bouclier."
+      }
     ]
   },
-
   "starterSpren": {
     "id": "sylphrena",
     "name": "Sylphrena",
@@ -58,30 +84,38 @@
       "1": {
         "attack": 1,
         "health": 1,
-        "keywords": ["vol"],
+        "keywords": [
+          "vol"
+        ],
         "description": "1/1, vole autour de Kaladin."
       },
       "2": {
-        "attack": 0,
-        "health": 0,
-        "keywords": ["arme"],
-        "description": "Se transforme en lance : +2 ATK à Kaladin."
+        "attack": 1,
+        "health": 2,
+        "keywords": [
+          "vol"
+        ],
+        "description": "1/2, infuse Kaladin et ses alliés de Stormlight."
       },
       "3": {
-        "attack": 2,
-        "health": 2,
-        "keywords": ["vol", "esquive"],
-        "description": "2/2, esquive la prochaine attaque ciblée."
+        "attack": 0,
+        "health": 0,
+        "keywords": [
+          "arme"
+        ],
+        "description": "Se transforme en Lance d'Éclat : +2 ATK à Kaladin."
       },
       "4": {
         "attack": 3,
         "health": 3,
-        "keywords": ["vol", "indestructible-si-heros-vivant"],
+        "keywords": [
+          "vol",
+          "indestructible-si-heros-vivant"
+        ],
         "description": "3/3, indestructible tant que Kaladin est en vie."
       }
     }
   },
-
   "units": [
     {
       "id": "bridge-four-soldier",
@@ -91,7 +125,9 @@
       "order": "Windrunner",
       "attack": 2,
       "health": 3,
-      "keywords": ["couverture"],
+      "keywords": [
+        "couverture"
+      ],
       "text": "Couverture : peut s'interposer pour protéger un allié ou le héros."
     },
     {
@@ -102,7 +138,9 @@
       "order": "Windrunner",
       "attack": 2,
       "health": 4,
-      "keywords": ["obstination"],
+      "keywords": [
+        "obstination"
+      ],
       "text": "Obstination : la première fois qu'il devrait mourir, reste à 1 PV."
     },
     {
@@ -116,7 +154,6 @@
       "text": "Tandem : +1 ATK si un autre Drehy & Skar est en jeu."
     }
   ],
-
   "surges": [
     {
       "id": "lashing-basique",
@@ -147,7 +184,6 @@
       "effect": "Renvoie une unité ennemie dans la main de son propriétaire."
     }
   ],
-
   "fabrials": [
     {
       "id": "sphere-infusion",
@@ -160,7 +196,6 @@
       "effect": "Gagne 2 Stormlight ce tour."
     }
   ],
-
   "herauts": [
     {
       "id": "jezrien",
@@ -173,7 +208,6 @@
       "effect": "Cri d'arrivée : ton héros gagne 1 niveau de Lien."
     }
   ],
-
   "eclats": [
     {
       "id": "honor",
@@ -184,7 +218,6 @@
       "effect": "Ton héros gagne 2 niveaux de Lien et +10 bouclier."
     }
   ],
-
   "deck": {
     "id": "windrunners-starter",
     "name": "Coureurs du Vent",

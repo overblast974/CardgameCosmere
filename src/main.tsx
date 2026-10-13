@@ -2,6 +2,16 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { useGameStore } from './store/gameStore'
+import { useFxStore } from './store/fxStore'
+
+// En développement uniquement : expose les stores pour piloter des scénarios
+// (ex. forcer un niveau de Lien pour tester la cérémonie de serment).
+if (import.meta.env.DEV) {
+  const devWindow = window as Window & { __roshar?: typeof useGameStore; __rosharFx?: typeof useFxStore }
+  devWindow.__roshar = useGameStore
+  devWindow.__rosharFx = useFxStore
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

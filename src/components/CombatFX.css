@@ -1,13 +1,55 @@
+/*
+ * Volontairement SANS position/z-index : un conteneur fixed créerait un
+ * contexte d'empilement isolé, et les clips en mix-blend-mode « screen » ne
+ * se fondraient qu'avec ce conteneur transparent (leur fond noir resterait
+ * visible). Chaque burst/clip est donc lui-même en position fixed, dans le
+ * contexte racine, et se fond avec le plateau en dessous.
+ */
 .combat-fx {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
   pointer-events: none;
-  overflow: hidden;
+}
+
+/* Clip vidéo d'effet (fond noir) : le mode « screen » ne laisse passer que la lumière. */
+.fx-clip {
+  position: fixed;
+  z-index: 60;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  object-fit: cover;
+  /* contrast > 1 écrase le « presque noir » de l'encodage en vrai noir,
+     invisible en mode screen ; le masque radial gomme les bords du carré. */
+  filter: contrast(1.4);
+  -webkit-mask-image: radial-gradient(circle, #000 52%, transparent 72%);
+  mask-image: radial-gradient(circle, #000 52%, transparent 72%);
+  animation: fx-clip-in 0.18s ease-out;
+}
+
+/* Division : pas de flamme, une brûlure orange qui s'effrite. */
+.fx-clip--division {
+  filter: contrast(1.4) saturate(1.15);
+}
+
+/* Stormlight : brume froide bleu-blanc, pas du feu. */
+.fx-clip--stormlight,
+.fx-clip--lashing {
+  filter: contrast(1.4) brightness(1.1);
+}
+
+@keyframes fx-clip-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
 
 .fx-burst {
-  position: absolute;
+  position: fixed;
+  z-index: 61;
   width: 0;
   height: 0;
   --fx-color: #ff8a4c;
@@ -120,7 +162,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .fx-ring,
-  .fx-particle {
+  .fx-particle,
+  .fx-clip {
     display: none;
   }
   .fx-text {

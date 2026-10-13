@@ -42,3 +42,25 @@ Si l'image n'existe pas, la carte affiche son glyphe emoji par défaut.
 - `nightblood.webp`
 
 Pour le fond du jeu : dépose `main.webp` dans `../bg/`.
+
+## Manifestations (arme / armure du Spren)
+
+Ces cartes ne sont pas dans le deck : elles apparaissent à côté du héros
+quand il prononce le serment correspondant (voir `manifestations` dans le
+JSON du deck).
+
+- `sylphrena-lance.webp` (Lien 3) · `kaladin-plaque.webp` (Lien 4)
+- `hautjuge-lame.webp` (Lien 3) · `szeth-plaque.webp` (Lien 4)
+
+## Stades d'évolution et boucles vidéo
+
+- `../heroes/<heroId>-<niveau>.webp` : portrait du héros à chaque niveau de
+  Lien (0 à 4). Un niveau manquant retombe sur le stade inférieur.
+- `../loops/<nom>.mp4` + `.webm` : boucles silencieuses (fond `bg-storm`,
+  portraits `<heroId>-<niveau>`, effets `vfx-lashing`, `vfx-division`,
+  `vfx-stormlight`, `vfx-oath` sur fond noir). Le MP4 (H.264) couvre Safari,
+  Chrome et Firefox ; le WebM (VP9) sert de secours aux Chromium sans codecs.
+
+Toutes les images et boucles actuelles ont été générées avec Higgsfield
+(GPT Image 2.5 pour les images, Kling 3.0 pour les vidéos), voir
+`docs/illustrations.md`.

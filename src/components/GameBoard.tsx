@@ -1,14 +1,18 @@
-import { useState } from 'react';
-import { useGameStore } from '../store/gameStore';
+import { useEffect, useRef, useState } from 'react';
+import { useGameStore, getEffectiveAttack } from '../store/gameStore';
+import { useFxStore } from '../store/fxStore';
 import { getDeckBundle } from '../data/cards/loader';
 import { CardComponent } from './CardComponent';
 import { HeroPanel } from './HeroPanel';
 import { PlayerHand } from './PlayerHand';
 import { CombatFX } from './CombatFX';
-import { captureFxRects, diffAndSpawn, lunge } from '../game/combatFx';
+import { OathCeremony } from './OathCeremony';
+import { captureFxRects, diffAndSpawn, heroFxId, lunge, playClipOn } from '../game/combatFx';
 import type { FxKind } from '../store/fxStore';
+import type { VfxClip } from '../assets/artwork';
 import type { UnitInPlay } from '../types/game';
-import type { Card, SurgeCard, FabrialCard } from '../types/card';
+import type { Card, LinkLevel, SurgeCard, FabrialCard } from '../types/card';
+import { LINK_LEVEL_NAMES } from '../types/card';
 import './GameBoard.css';
 
 type ActionMode =
@@ -63,20 +67,53 @@ function spellFxKind(card: Card): FxKind {
 }
 
 /**
- * Exécute une action du jeu en capturant les positions des cibles avant la
- * mutation, puis déclenche les effets visuels correspondants. `attackerFxId`
- * anime en plus le bond de l'attaquant.
+ * Clip vidéo d'effet associé à une carte. Le choix suit la nature de la magie,
+ * pas sa couleur par défaut : les Lashings (gravité) soufflent une bourrasque
+ * de Stormlight, la Division brûle et effrite, les sphères libèrent une brume
+ * froide. Aucune « flamme » générique : le feu n'existe que pour la Division.
  */
-function runWithFx(kind: FxKind, action: () => void, attackerFxId?: string) {
+function spellClip(card: Card): VfxClip | undefined {
+  switch (card.id) {
+    case 'lashing-basique':
+    case 'lashing-complet':
+    case 'contre-gravite':
+    case 'gravitation':
+      return 'lashing';
+    case 'division':
+      return 'division';
+    case 'sphere-infusion':
+    case 'sphere-de-jugement':
+    case 'loi-du-ciel':
+      return 'stormlight';
+    default:
+      return undefined;
+  }
+}
+
+interface FxOptions {
+  /** Anime en plus le bond de l'attaquant. */
+  attackerFxId?: string;
+  /** Clip vidéo joué sur chaque unité touchée. */
+  clip?: VfxClip;
+  /** Clip vidéo joué sur un élément précis (ex. le héros qui gagne de la Stormlight). */
+  clipOnFxId?: string;
+}
+
+/**
+ * Exécute une action du jeu en capturant les positions des cibles avant la
+ * mutation, puis déclenche les effets visuels correspondants.
+ */
+function runWithFx(kind: FxKind, action: () => void, options: FxOptions = {}) {
   const before = useGameStore.getState().game;
   const rects = captureFxRects();
   action();
   const after = useGameStore.getState().game;
   if (after === before) return; // action invalide : rien ne s'est passé
-  diffAndSpawn(before, after, rects, kind);
+  diffAndSpawn(before, after, rects, kind, options.clip);
+  if (options.clipOnFxId && options.clip) playClipOn(options.clipOnFxId, options.clip);
   // setTimeout (et non rAF) pour s'exécuter après le commit React qui réécrit
   // la className de la carte, sinon le bond serait effacé aussitôt.
-  if (attackerFxId) setTimeout(() => lunge(attackerFxId), 0);
+  if (options.attackerFxId) setTimeout(() => lunge(options.attackerFxId!), 0);
 }
 
 export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }: GameBoardProps) {
@@ -92,6 +129,39 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
 
   const [mode, setMode] = useState<ActionMode>({ type: 'idle' });
   const [passPending, setPassPending] = useState(false);
+
+  // Cérémonie de serment : dès qu'un héros gagne un niveau de Lien (localement
+  // ou via la synchro en ligne), on met en file une cérémonie par niveau gagné.
+  const linkLevelsRef = useRef<Record<string, LinkLevel>>({});
+  useEffect(() => {
+    const enqueue = useFxStore.getState().enqueueCeremony;
+    const previous = linkLevelsRef.current;
+    const next: Record<string, LinkLevel> = {};
+    for (const playerId of Object.keys(game.players)) {
+      const player = game.players[playerId];
+      next[playerId] = player.linkLevel;
+      const before = previous[playerId];
+      if (before === undefined || player.linkLevel <= before) continue;
+      const definition = getDeckBundle(player.deckId).heroDefinition;
+      for (let level = before + 1; level <= player.linkLevel; level += 1) {
+        const linkLevel = level as LinkLevel;
+        const oathLevel = linkLevel as 1 | 2 | 3 | 4;
+        const ability = definition.abilities.find((a) => a.linkLevelRequired === linkLevel);
+        enqueue({
+          playerId,
+          playerName: player.name,
+          heroId: player.heroCard.id,
+          heroName: player.heroCard.name,
+          level: linkLevel,
+          oath: definition.oaths[oathLevel],
+          abilityName: ability?.name ?? LINK_LEVEL_NAMES[linkLevel],
+          abilityDescription: ability?.description ?? '',
+          manifestation: definition.manifestations.find((m) => m.linkLevel === linkLevel),
+        });
+      }
+    }
+    linkLevelsRef.current = next;
+  }, [game]);
 
   // En hotseat, le joueur « local » est toujours celui dont c'est le tour.
   const perspectiveId = hotseat ? game.activePlayerId : localPlayerId;
@@ -165,8 +235,13 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
         return;
       }
     }
-    // Cartes sans cible (unités, hérauts, éclats, pioche…) : AoE éventuel animé.
-    runWithFx('damage', () => playCard(perspectiveId, index));
+    // Cartes sans cible (unités, hérauts, éclats, pioche, Stormlight…) : AoE
+    // éventuel animé, et brume de Stormlight sur le héros pour les sphères.
+    const clip = spellClip(card);
+    runWithFx('damage', () => playCard(perspectiveId, index), {
+      clip,
+      clipOnFxId: clip === 'stormlight' ? heroFxId(perspectiveId) : undefined,
+    });
   };
 
   const handleLocalUnitClick = (unit: UnitInPlay) => {
@@ -178,8 +253,10 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
     }
     if (mode.type === 'card' && mode.side === 'ally') {
       const cardIndex = mode.cardIndex;
-      const kind = spellFxKind(localPlayer.hand[cardIndex]);
-      runWithFx(kind, () => playTargetedCard(perspectiveId, cardIndex, unit.instanceId));
+      const card = localPlayer.hand[cardIndex];
+      runWithFx(spellFxKind(card), () => playTargetedCard(perspectiveId, cardIndex, unit.instanceId), {
+        clip: spellClip(card),
+      });
       resetMode();
       return;
     }
@@ -202,16 +279,20 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
     if (!isLocalTurn) return;
     if (mode.type === 'attack') {
       const attackerId = mode.attackerInstanceId;
-      runWithFx('attack', () => attackUnit(perspectiveId, attackerId, unit.instanceId), attackerId);
+      runWithFx('attack', () => attackUnit(perspectiveId, attackerId, unit.instanceId), { attackerFxId: attackerId });
       resetMode();
     } else if (mode.type === 'power') {
-      const kind: FxKind = heroDefinition.heroPowerType === 'lashing' ? 'disable' : 'damage';
-      runWithFx(kind, () => triggerHeroPower(perspectiveId, unit.instanceId));
+      const isLashing = heroDefinition.heroPowerType === 'lashing';
+      runWithFx(isLashing ? 'disable' : 'damage', () => triggerHeroPower(perspectiveId, unit.instanceId), {
+        clip: isLashing ? 'lashing' : 'division',
+      });
       resetMode();
     } else if (mode.type === 'card' && mode.side === 'enemy') {
       const cardIndex = mode.cardIndex;
-      const kind = spellFxKind(localPlayer.hand[cardIndex]);
-      runWithFx(kind, () => playTargetedCard(perspectiveId, cardIndex, unit.instanceId));
+      const card = localPlayer.hand[cardIndex];
+      runWithFx(spellFxKind(card), () => playTargetedCard(perspectiveId, cardIndex, unit.instanceId), {
+        clip: spellClip(card),
+      });
       resetMode();
     }
   };
@@ -219,7 +300,7 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
   const handleOpponentHeroClick = () => {
     if (!isLocalTurn || mode.type !== 'attack') return;
     const attackerId = mode.attackerInstanceId;
-    runWithFx('attack', () => attackHero(perspectiveId, attackerId), attackerId);
+    runWithFx('attack', () => attackHero(perspectiveId, attackerId), { attackerFxId: attackerId });
     resetMode();
   };
 
@@ -242,6 +323,7 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
   return (
     <div className="game-board">
       <CombatFX />
+      <OathCeremony />
       {passPending && (
         <div className="pass-overlay">
           <div className="pass-overlay__panel">
@@ -307,7 +389,7 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
               key={unit.instanceId}
               card={unit.card}
               fxId={unit.instanceId}
-              currentAttack={unit.currentAttack}
+              currentAttack={getEffectiveAttack(opponent, unit)}
               currentHealth={unit.currentHealth}
               lashed={unit.isLashed}
               guarding={Boolean(unit.guarding)}
@@ -330,7 +412,7 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
               <CardComponent
                 card={unit.card}
                 fxId={unit.instanceId}
-                currentAttack={unit.currentAttack}
+                currentAttack={getEffectiveAttack(localPlayer, unit)}
                 currentHealth={unit.currentHealth}
                 lashed={unit.isLashed}
                 guarding={Boolean(unit.guarding)}

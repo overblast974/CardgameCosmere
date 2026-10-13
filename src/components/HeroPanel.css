@@ -11,21 +11,27 @@
   color: inherit;
   font-family: inherit;
   text-align: left;
-  cursor: default;
   width: 100%;
   max-width: 520px;
   align-self: center;
   flex-shrink: 0;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.hero-panel:disabled {
-  opacity: 1;
+  user-select: none;
 }
 
 .hero-panel--active {
   border-color: var(--gold);
   box-shadow: 0 0 14px rgba(216, 169, 58, 0.18);
+}
+
+/* Le panneau s'illumine avec les serments. */
+.hero-panel--level-2,
+.hero-panel--level-3 {
+  box-shadow: 0 0 16px rgba(127, 212, 232, 0.2);
+}
+
+.hero-panel--level-4 {
+  box-shadow: 0 0 22px rgba(216, 169, 58, 0.3), inset 0 0 30px rgba(127, 212, 232, 0.08);
 }
 
 .hero-panel--targetable {
@@ -50,25 +56,59 @@
   gap: 10px;
 }
 
+/* ---------- Portrait évolutif ---------- */
+
 .hero-panel__portrait {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 64px;
+  height: 64px;
+  padding: 0;
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.15), rgba(0, 0, 0, 0.4));
   border: 2px solid var(--border);
-  font-size: 1.3rem;
+  font-size: 1.6rem;
   flex-shrink: 0;
   overflow: hidden;
+  cursor: pointer;
+  color: inherit;
+  animation: portrait-flash 1.1s ease-out;
 }
 
-.hero-panel__portrait-img {
+@keyframes portrait-flash {
+  0% {
+    filter: brightness(2.6);
+    box-shadow: 0 0 0 0 rgba(127, 212, 232, 0.9);
+  }
+  100% {
+    filter: brightness(1);
+    box-shadow: 0 0 0 14px rgba(127, 212, 232, 0);
+  }
+}
+
+.hero-panel__portrait-img,
+.hero-panel__portrait-video {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.hero-panel__portrait-video {
+  animation: portrait-video-in 1s ease-out both;
+}
+
+@keyframes portrait-video-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .hero-panel__portrait-icon {
@@ -77,18 +117,43 @@
 }
 
 .hero-panel__portrait-icon svg {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   display: block;
 }
 
-.hero-panel--compact .hero-panel__portrait-icon svg {
-  width: 20px;
-  height: 20px;
+.hero-panel__portrait-level {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 0.66rem;
+  font-weight: 800;
+  color: #fff;
+  background: radial-gradient(circle at 35% 30%, #c3b2f2, var(--violet) 75%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 6px rgba(138, 111, 216, 0.7);
 }
 
 .hero-panel--active .hero-panel__portrait {
   border-color: var(--gold);
+}
+
+.hero-panel--level-2 .hero-panel__portrait,
+.hero-panel--level-3 .hero-panel__portrait {
+  border-color: var(--storm);
+  box-shadow: 0 0 12px rgba(127, 212, 232, 0.45);
+}
+
+.hero-panel--level-4 .hero-panel__portrait {
+  border-color: var(--gold);
+  box-shadow: 0 0 16px rgba(216, 169, 58, 0.6), 0 0 30px rgba(127, 212, 232, 0.35);
 }
 
 .hero-panel__identity {
@@ -143,7 +208,21 @@
   padding: 3px 10px;
   font-weight: 800;
   font-size: 0.85rem;
+  animation: shield-in 0.6s ease-out;
 }
+
+@keyframes shield-in {
+  from {
+    transform: scale(0.4);
+    filter: brightness(2.5);
+  }
+  to {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+/* ---------- Stormlight ---------- */
 
 .hero-panel__stormlight {
   display: flex;
@@ -174,6 +253,8 @@
   color: var(--storm);
 }
 
+/* ---------- Lien + manifestations ---------- */
+
 .hero-panel__bottom {
   display: flex;
   justify-content: space-between;
@@ -182,24 +263,123 @@
   flex-wrap: wrap;
 }
 
+.hero-panel__manifest {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.hero-panel__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px 2px 2px;
+  border-radius: 999px;
+  border: 1px dashed var(--border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--muted);
+  font-size: 0.64rem;
+  white-space: nowrap;
+  max-width: 160px;
+}
+
+.hero-panel__chip-art,
+.hero-panel__chip-glyph {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  filter: grayscale(1) brightness(0.5);
+}
+
+.hero-panel__chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Manifestation débloquée : la carte « surgit » en argent lumineux. */
+.hero-panel__chip--on {
+  border: 1px solid #cfd8e6;
+  background: linear-gradient(160deg, rgba(207, 216, 230, 0.22), rgba(207, 216, 230, 0.06));
+  color: #f1f4fa;
+  box-shadow: 0 0 10px rgba(207, 216, 230, 0.35);
+  animation: chip-manifest 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.25);
+}
+
+.hero-panel__chip--on .hero-panel__chip-art,
+.hero-panel__chip--on .hero-panel__chip-glyph {
+  filter: none;
+  box-shadow: 0 0 6px rgba(207, 216, 230, 0.7);
+}
+
+@keyframes chip-manifest {
+  0% {
+    transform: scale(0.3) rotate(-10deg);
+    opacity: 0;
+    filter: brightness(3);
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
 .hero-panel__counts {
   font-size: 0.72rem;
   color: var(--muted);
   white-space: nowrap;
 }
 
-/* Variante compacte (adversaire) : tout sur une ligne dense. */
+/* ---------- Variante compacte (adversaire) ---------- */
+
 .hero-panel--compact {
   gap: 4px;
   padding: 6px 10px;
 }
 
 .hero-panel--compact .hero-panel__portrait {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   font-size: 1.05rem;
+}
+
+.hero-panel--compact .hero-panel__portrait-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.hero-panel--compact .hero-panel__portrait-level {
+  width: 15px;
+  height: 15px;
+  font-size: 0.58rem;
 }
 
 .hero-panel--compact .hero-panel__name {
   font-size: 0.8rem;
+}
+
+.hero-panel--compact .hero-panel__chip {
+  font-size: 0.58rem;
+  padding: 1px 6px 1px 1px;
+}
+
+.hero-panel--compact .hero-panel__chip-art,
+.hero-panel--compact .hero-panel__chip-glyph {
+  width: 16px;
+  height: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-panel__portrait,
+  .hero-panel__portrait-video,
+  .hero-panel__shield,
+  .hero-panel__chip--on,
+  .hero-panel--targetable {
+    animation: none;
+  }
 }

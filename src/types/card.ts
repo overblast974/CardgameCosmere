@@ -1,6 +1,6 @@
 // Modèle de données central pour les cartes des Archives de Roshar
 
-export type CardType = 'radiant' | 'spren' | 'surge' | 'fabrial' | 'heraut' | 'eclat';
+export type CardType = 'radiant' | 'spren' | 'surge' | 'fabrial' | 'heraut' | 'eclat' | 'manifestation';
 
 export type Order =
   | 'Windrunner'
@@ -123,13 +123,28 @@ export interface EclatCard extends BaseCard {
   terrainDurationTurns?: number;
 }
 
+/**
+ * Manifestation du Spren lié, qui apparaît à côté du héros quand un serment
+ * est prononcé : l'arme (Lame/Lance d'Éclat) puis l'armure (Plaque d'Éclat).
+ * Ces cartes ne sont jamais dans le deck : elles se matérialisent d'elles-mêmes
+ * au niveau de Lien indiqué, et leur effet est déjà porté par les règles du
+ * héros (+2 ATK au niveau 2, +15 bouclier au niveau 4).
+ */
+export interface ManifestationCard extends BaseCard {
+  type: 'manifestation';
+  kind: 'weapon' | 'armor';
+  linkLevel: LinkLevel;
+  effect: string;
+}
+
 export type Card =
   | RadiantCard
   | SprenCard
   | SurgeCard
   | FabrialCard
   | HerautCard
-  | EclatCard;
+  | EclatCard
+  | ManifestationCard;
 
 /** Capacité spéciale d'un héros débloquée à un niveau de Lien donné. */
 export interface HeroAbility {
@@ -168,6 +183,10 @@ export interface HeroDefinition {
   heroPowerName: string;
   heroPowerValue?: number;
   abilities: HeroAbility[];
+  /** Texte du serment prononcé à chaque niveau de Lien (affiché lors de la cérémonie). */
+  oaths: Record<1 | 2 | 3 | 4, string>;
+  /** Cartes arme / armure qui se matérialisent aux niveaux de Lien indiqués. */
+  manifestations: ManifestationCard[];
 }
 
 export interface Deck {
