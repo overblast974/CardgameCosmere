@@ -16,7 +16,7 @@
     "order": "Skybreaker",
     "baseHealth": 30,
     "linkCondition": {
-      "description": "Gagne 1 Lien chaque fois qu'une unité ennemie est détruite par tes attaques ou tes pouvoirs."
+      "description": "Gagne 1 Lien chaque fois qu'une unité ennemie est détruite par tes attaques, tes sorts ou tes pouvoirs."
     },
     "linkGainTrigger": "destruction",
     "heroPowerType": "smite",

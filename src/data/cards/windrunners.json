@@ -16,7 +16,7 @@
     "order": "Windrunner",
     "baseHealth": 30,
     "linkCondition": {
-      "description": "Gagne 1 Lien chaque fois qu'une unité alliée absorbe une attaque grâce à Couverture."
+      "description": "Gagne 1 Lien chaque fois qu'une unité alliée se place en Couverture, et chaque fois qu'elle absorbe une attaque pour un allié."
     },
     "linkGainTrigger": "protection",
     "heroPowerType": "lashing",
@@ -159,7 +159,7 @@
       "id": "lashing-basique",
       "name": "Lashing Basique",
       "type": "surge",
-      "cost": 2,
+      "cost": 1,
       "order": "Windrunner",
       "effectType": "buff",
       "effectValue": 1,
@@ -171,8 +171,9 @@
       "type": "surge",
       "cost": 3,
       "order": "Windrunner",
-      "effectType": "disable",
-      "effect": "Une unité ennemie ne peut pas attaquer à son prochain tour."
+      "effectType": "lash",
+      "effect": "Projette une unité ennemie contre le ciel : 2 dégâts, et elle ne peut pas attaquer à son prochain tour.",
+      "effectValue": 2
     },
     {
       "id": "contre-gravite",
@@ -182,6 +183,16 @@
       "order": "Windrunner",
       "effectType": "bounce",
       "effect": "Renvoie une unité ennemie dans la main de son propriétaire."
+    },
+    {
+      "id": "cri-du-pont-quatre",
+      "name": "Cri du Pont Quatre",
+      "type": "surge",
+      "cost": 2,
+      "order": "Windrunner",
+      "effectType": "draw",
+      "effectValue": 2,
+      "effect": "Les Frères du Pont se serrent les coudes : pioche 2 cartes."
     }
   ],
   "fabrials": [
@@ -229,19 +240,19 @@
       "bridge-four-soldier",
       "lopen",
       "lopen",
-      "lopen",
       "drehy-skar",
       "drehy-skar",
       "lashing-basique",
       "lashing-basique",
-      "lashing-basique",
+      "lashing-complet",
       "lashing-complet",
       "lashing-complet",
       "contre-gravite",
       "contre-gravite",
       "sphere-infusion",
       "sphere-infusion",
-      "jezrien",
+      "cri-du-pont-quatre",
+      "cri-du-pont-quatre",
       "jezrien",
       "honor"
     ]

@@ -38,6 +38,13 @@ const bgModules = import.meta.glob('./bg/*.{webp,png,jpg,jpeg,avif}', {
   import: 'default',
 }) as Record<string, string>;
 
+// Cartes de bataille (fond du plateau) : <nom>-portrait et <nom>-landscape,
+// plus une boucle optionnelle loops/map-<nom>.mp4 pour le format portrait.
+const mapModules = import.meta.glob('./maps/*.{webp,png,jpg,jpeg,avif}', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+
 // Icônes fantasy (game-icons.net, CC-BY 3.0) servant de repli élégant avant
 // que de vraies illustrations soient déposées. Importées en texte brut pour
 // pouvoir les colorier en CSS (fill: currentColor).
@@ -93,6 +100,9 @@ export function hasVideo(sources: VideoSources | undefined): sources is VideoSou
 
 /** URL des fonds déposés, indexés par nom de fichier (« main » recommandé). */
 export const backgroundArt = keyByFilename(bgModules);
+
+/** Cartes de bataille, indexées par nom de fichier (`gouffres-portrait`, `gouffres-landscape`…). */
+export const mapArt = keyByFilename(mapModules);
 
 /** Fond principal si l'utilisateur en a déposé un, sinon undefined (fond CSS animé). */
 export const mainBackground: string | undefined =

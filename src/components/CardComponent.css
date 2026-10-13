@@ -38,7 +38,7 @@
 }
 
 /* Hauteur uniforme des cartes détaillées (main), comme de vraies cartes. */
-.card:not(.card--compact) {
+.card:not(.card--compact):not(.card--hand) {
   min-height: 182px;
 }
 
@@ -393,10 +393,86 @@
   }
 }
 
+/* ---------- Saisie (drag & drop) ---------- */
+
+/* Les gestes horizontaux restent au défilement natif des rangées / de la main ;
+   un geste vertical démarre la saisie (useDragSource). */
+.card--compact,
+.card--hand {
+  touch-action: pan-x;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.card--dragging {
+  opacity: 0.3;
+  transform: scale(0.96);
+}
+
+/* ---------- Variante main (éventail) ---------- */
+
+.card--hand {
+  width: 104px;
+  min-height: 0;
+  padding: 4px 4px 12px;
+  gap: 3px;
+}
+
+.card--hand .card__title {
+  min-height: 20px;
+  padding: 2px 4px 2px 22px;
+}
+
+.card--hand .card__name {
+  font-size: 0.66rem;
+}
+
+.card--hand .card__cost {
+  width: 22px;
+  height: 22px;
+  font-size: 0.76rem;
+}
+
+.card--hand .card__art {
+  height: 54px;
+}
+
+.card--hand .card__art--illustrated {
+  height: 72px;
+}
+
+.card--hand .card__typeline {
+  font-size: 0.46rem;
+  padding: 1px 5px;
+}
+
+.card--hand .card__textbox {
+  min-height: 0;
+  padding: 3px 5px;
+  margin-bottom: 13px;
+}
+
+.card--hand .card__text {
+  font-size: 0.56rem;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card--hand .card__attack,
+.card--hand .card__health {
+  width: 24px;
+  height: 24px;
+  font-size: 0.8rem;
+}
+
 /* ---------- Variante compacte (plateau) ---------- */
 
 .card--compact {
-  width: clamp(84px, 24vw, 110px);
+  width: clamp(84px, 22vw, 104px);
   padding: 4px 4px 11px;
   gap: 3px;
 }
@@ -442,7 +518,7 @@
 }
 
 @media (max-width: 640px) {
-  .card {
+  .card:not(.card--hand):not(.card--compact) {
     width: clamp(112px, 31vw, 140px);
   }
   .card--compact {

@@ -30,6 +30,8 @@ export interface PlayerState {
   board: UnitInPlay[];
   graveyard: Card[];
   heroAbilityUsedThisTurn: boolean;
+  /** Lame d'Éclat (Lien 3) : le héros peut attaquer une fois par tour. */
+  heroCanAttack?: boolean;
 }
 
 export type Phase = 'main' | 'attack' | 'end';

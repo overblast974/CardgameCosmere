@@ -1,3 +1,4 @@
+import type { ButtonHTMLAttributes } from 'react';
 import type { Card, LinkLevel } from '../types/card';
 import { cardArt, cardIcons } from '../assets/artwork';
 import './CardComponent.css';
@@ -74,10 +75,18 @@ interface CardComponentProps {
   /** Manifestation pas encore débloquée : grisée avec le niveau de Lien requis. */
   locked?: boolean;
   compact?: boolean;
+  /** Format « main » : plus étroit, texte tronqué, pensé pour l'éventail. */
+  hand?: boolean;
+  /** La carte est en cours de saisie : son emplacement d'origine s'estompe. */
+  dragging?: boolean;
   /** Illustration à afficher à la place de celle de la carte (ex. stade d'évolution d'un héros). */
   artUrl?: string;
   /** Identifiant pour la couche d'effets (positionnement des VFX). */
   fxId?: string;
+  /** Valeur de `data-drop` : cible possible d'une saisie (ex. `enemy-unit:<id>`). */
+  dropId?: string;
+  /** Gestionnaires de saisie (pointer down, click capture) fournis par useDragSource. */
+  handlers?: ButtonHTMLAttributes<HTMLButtonElement>;
   onClick?: () => void;
 }
 
@@ -124,8 +133,12 @@ export function CardComponent({
   guarding,
   locked,
   compact,
+  hand,
+  dragging,
   artUrl,
   fxId,
+  dropId,
+  handlers,
   onClick,
 }: CardComponentProps) {
   const base = getAttackHealth(card, sprenLevel);
@@ -147,6 +160,8 @@ export function CardComponent({
     lashed ? 'card--lashed' : '',
     locked ? 'card--locked' : '',
     compact ? 'card--compact' : '',
+    hand ? 'card--hand' : '',
+    dragging ? 'card--dragging' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -154,7 +169,15 @@ export function CardComponent({
   const hasStats = attack !== undefined || health !== undefined;
 
   return (
-    <button type="button" className={classes} onClick={onClick} disabled={disabled} data-fx={fxId}>
+    <button
+      type="button"
+      className={classes}
+      {...handlers}
+      onClick={onClick}
+      disabled={disabled}
+      data-fx={fxId}
+      data-drop={dropId}
+    >
       {card.type === 'manifestation' ? (
         <span className="card__cost card__cost--link" title="Niveau de Lien requis">
           ✦{card.linkLevel}
@@ -171,7 +194,7 @@ export function CardComponent({
 
       <div className={`card__art${art ? ' card__art--illustrated' : ''}`}>
         {art ? (
-          <img className="card__art-img" src={art} alt="" loading="lazy" />
+          <img className="card__art-img" src={art} alt="" loading="lazy" draggable={false} />
         ) : cardIcons[card.id] ? (
           <span className="card__art-icon" dangerouslySetInnerHTML={{ __html: cardIcons[card.id] }} />
         ) : (

@@ -42,10 +42,13 @@ export type Keyword = 'couverture' | 'obstination' | 'zele';
  * - draw : pioche effectValue cartes.
  * - stormlight : gagne effectValue Stormlight ce tour.
  * - aoe-damage : inflige effectValue dégâts à toutes les unités ennemies.
+ * - lash : inflige effectValue dégâts à une unité ennemie ciblée, qui ne peut
+ *   pas attaquer à son prochain tour si elle survit (projetée contre le ciel).
  */
 export type CardEffectType =
   | 'damage'
   | 'disable'
+  | 'lash'
   | 'bounce'
   | 'buff'
   | 'draw'

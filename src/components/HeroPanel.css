@@ -1,18 +1,19 @@
 .hero-panel {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 8px 12px;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
   border: 1px solid var(--border);
   border-radius: 12px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 50%),
     var(--bg-panel-soft);
+  backdrop-filter: blur(6px);
   color: inherit;
   font-family: inherit;
   text-align: left;
   width: 100%;
-  max-width: 520px;
+  max-width: 560px;
   align-self: center;
   flex-shrink: 0;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -50,10 +51,12 @@
   }
 }
 
-.hero-panel__top {
+.hero-panel__body {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
 }
 
 /* ---------- Portrait évolutif ---------- */
@@ -71,10 +74,25 @@
   border: 2px solid var(--border);
   font-size: 1.6rem;
   flex-shrink: 0;
-  overflow: hidden;
+  overflow: visible;
   cursor: pointer;
   color: inherit;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
   animation: portrait-flash 1.1s ease-out;
+}
+
+.hero-panel__portrait-img,
+.hero-panel__portrait-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
 }
 
 @keyframes portrait-flash {
@@ -86,16 +104,6 @@
     filter: brightness(1);
     box-shadow: 0 0 0 14px rgba(127, 212, 232, 0);
   }
-}
-
-.hero-panel__portrait-img,
-.hero-panel__portrait-video {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
 }
 
 .hero-panel__portrait-video {
@@ -124,8 +132,8 @@
 
 .hero-panel__portrait-level {
   position: absolute;
-  right: 2px;
-  bottom: 2px;
+  right: -2px;
+  bottom: -2px;
   z-index: 2;
   display: inline-flex;
   align-items: center;
@@ -141,6 +149,43 @@
   box-shadow: 0 0 6px rgba(138, 111, 216, 0.7);
 }
 
+/* ATK de la Lame d'Éclat (niveau 3+). */
+.hero-panel__portrait-attack {
+  position: absolute;
+  left: -4px;
+  bottom: -2px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: #fff;
+  background: radial-gradient(circle at 36% 30%, #ffb27a, #c65a26 70%);
+  border: 1px solid #f0a468;
+  text-shadow: 0 1px 2px rgba(90, 20, 0, 0.85);
+}
+
+/* Héros prêt à frapper : anneau doré qui pulse. */
+.hero-panel__portrait--armed {
+  border-color: var(--gold);
+  animation: portrait-armed 1.4s ease-in-out infinite;
+}
+
+@keyframes portrait-armed {
+  0%,
+  100% {
+    box-shadow: 0 0 6px rgba(216, 169, 58, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(216, 169, 58, 0.95);
+  }
+}
+
 .hero-panel--active .hero-panel__portrait {
   border-color: var(--gold);
 }
@@ -148,12 +193,18 @@
 .hero-panel--level-2 .hero-panel__portrait,
 .hero-panel--level-3 .hero-panel__portrait {
   border-color: var(--storm);
-  box-shadow: 0 0 12px rgba(127, 212, 232, 0.45);
 }
 
 .hero-panel--level-4 .hero-panel__portrait {
   border-color: var(--gold);
-  box-shadow: 0 0 16px rgba(216, 169, 58, 0.6), 0 0 30px rgba(127, 212, 232, 0.35);
+}
+
+/* ---------- Identité, vie, bouclier ---------- */
+
+.hero-panel__top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .hero-panel__identity {
@@ -166,15 +217,18 @@
 .hero-panel__name {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .hero-panel__player {
-  font-size: 0.7rem;
+  font-size: 0.66rem;
   color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .hero-panel__orbs {
@@ -184,30 +238,28 @@
   flex-shrink: 0;
 }
 
-.hero-panel__health {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  background: radial-gradient(circle at 35% 30%, #6bd694, #1e6e40 75%);
-  border: 1px solid var(--green);
-  color: #04220f;
-  border-radius: 999px;
-  padding: 3px 10px;
-  font-weight: 800;
-  font-size: 0.85rem;
-}
-
+.hero-panel__health,
 .hero-panel__shield {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  background: radial-gradient(circle at 35% 30%, #9cc4ec, #2e5d8f 75%);
-  border: 1px solid #5d9bd8;
-  color: #071c30;
   border-radius: 999px;
-  padding: 3px 10px;
+  padding: 2px 9px;
   font-weight: 800;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
+  border: 1px solid;
+}
+
+.hero-panel__health {
+  background: radial-gradient(circle at 35% 30%, #6bd694, #1e6e40 75%);
+  border-color: var(--green);
+  color: #04220f;
+}
+
+.hero-panel__shield {
+  background: radial-gradient(circle at 35% 30%, #9cc4ec, #2e5d8f 75%);
+  border-color: #5d9bd8;
+  color: #071c30;
   animation: shield-in 0.6s ease-out;
 }
 
@@ -222,19 +274,27 @@
   }
 }
 
-/* ---------- Stormlight ---------- */
+/* ---------- Stormlight + Lien ---------- */
+
+.hero-panel__bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 
 .hero-panel__stormlight {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   flex-wrap: wrap;
 }
 
 .hero-panel__gem {
-  width: 11px;
-  height: 11px;
-  border-radius: 3px;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
   transform: rotate(45deg);
   border: 1px solid rgba(127, 212, 232, 0.5);
   background: transparent;
@@ -247,52 +307,53 @@
 }
 
 .hero-panel__gem-count {
-  margin-left: 6px;
-  font-size: 0.72rem;
+  margin-left: 4px;
+  font-size: 0.7rem;
   font-weight: 700;
   color: var(--storm);
 }
 
-/* ---------- Lien + manifestations ---------- */
+/* ---------- Manifestations + actions ---------- */
 
-.hero-panel__bottom {
+.hero-panel__footer {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .hero-panel__manifest {
   display: flex;
-  gap: 6px;
+  gap: 5px;
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .hero-panel__chip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 2px 8px 2px 2px;
+  gap: 4px;
+  padding: 1px 7px 1px 1px;
   border-radius: 999px;
   border: 1px dashed var(--border);
   background: rgba(255, 255, 255, 0.02);
   color: var(--muted);
-  font-size: 0.64rem;
+  font-size: 0.6rem;
   white-space: nowrap;
-  max-width: 160px;
+  max-width: 150px;
 }
 
 .hero-panel__chip-art,
 .hero-panel__chip-glyph {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   object-fit: cover;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
+  font-size: 0.66rem;
   filter: grayscale(1) brightness(0.5);
 }
 
@@ -330,21 +391,34 @@
 }
 
 .hero-panel__counts {
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   color: var(--muted);
+  white-space: nowrap;
+}
+
+.hero-panel__attack {
+  background: linear-gradient(160deg, #b98a24, #8a6418);
+  color: #fff8e8;
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-weight: 700;
+  font-size: 0.72rem;
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(216, 169, 58, 0.35);
   white-space: nowrap;
 }
 
 /* ---------- Variante compacte (adversaire) ---------- */
 
 .hero-panel--compact {
-  gap: 4px;
-  padding: 6px 10px;
+  gap: 8px;
+  padding: 5px 10px;
 }
 
 .hero-panel--compact .hero-panel__portrait {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   font-size: 1.05rem;
 }
 
@@ -353,30 +427,49 @@
   height: 20px;
 }
 
+.hero-panel--compact .hero-panel__portrait-level,
+.hero-panel--compact .hero-panel__portrait-attack {
+  height: 15px;
+  font-size: 0.56rem;
+}
+
 .hero-panel--compact .hero-panel__portrait-level {
   width: 15px;
-  height: 15px;
-  font-size: 0.58rem;
+}
+
+.hero-panel--compact .hero-panel__body {
+  gap: 2px;
 }
 
 .hero-panel--compact .hero-panel__name {
   font-size: 0.8rem;
 }
 
+.hero-panel--compact .hero-panel__health,
+.hero-panel--compact .hero-panel__shield {
+  padding: 1px 8px;
+  font-size: 0.76rem;
+}
+
+.hero-panel--compact .hero-panel__footer:empty,
+.hero-panel--compact .hero-panel__manifest:empty {
+  display: none;
+}
+
 .hero-panel--compact .hero-panel__chip {
-  font-size: 0.58rem;
-  padding: 1px 6px 1px 1px;
+  font-size: 0.56rem;
 }
 
 .hero-panel--compact .hero-panel__chip-art,
 .hero-panel--compact .hero-panel__chip-glyph {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .hero-panel__portrait,
   .hero-panel__portrait-video,
+  .hero-panel__portrait--armed,
   .hero-panel__shield,
   .hero-panel__chip--on,
   .hero-panel--targetable {

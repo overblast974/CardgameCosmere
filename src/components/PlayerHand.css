@@ -1,13 +1,49 @@
 .player-hand {
   display: flex;
-  gap: 8px;
-  padding: 10px 12px 14px;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 22px 18px 8px;
   overflow-x: auto;
-  scrollbar-width: thin;
+  overflow-y: hidden;
+  scrollbar-width: none;
 }
 
-.player-hand > .card {
-  scroll-snap-align: center;
+.player-hand::-webkit-scrollbar {
+  display: none;
+}
+
+/* Centre l'éventail quand il tient, sinon défilement horizontal. */
+.player-hand__slot {
+  flex-shrink: 0;
+  transform-origin: 50% 130%;
+  transform: rotate(var(--rot)) translateY(var(--lift));
+  transition: transform 0.18s ease;
+}
+
+.player-hand__slot:first-child {
+  margin-left: auto;
+}
+
+.player-hand__slot:last-child {
+  margin-right: auto;
+}
+
+.player-hand__slot + .player-hand__slot {
+  margin-left: -24px;
+}
+
+.player-hand__slot:hover,
+.player-hand__slot:has(.card--selected) {
+  transform: rotate(0deg) translateY(-16px);
+  z-index: 4;
+}
+
+.player-hand__slot:has(.card:disabled) {
+  filter: brightness(0.8);
+}
+
+.player-hand__slot .card:not(:disabled):hover {
+  transform: none;
 }
 
 .player-hand--empty {
@@ -16,4 +52,10 @@
   color: var(--muted);
   font-style: italic;
   font-size: 0.85rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-hand__slot {
+    transition: none;
+  }
 }

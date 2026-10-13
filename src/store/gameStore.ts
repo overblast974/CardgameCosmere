@@ -44,7 +44,13 @@ function createPlayer(id: string, name: string, deckId: string): PlayerState {
     board: [],
     graveyard: [],
     heroAbilityUsedThisTurn: false,
+    heroCanAttack: false,
   };
+}
+
+/** Le héros peut frapper avec sa Lame d'Éclat (Lien 3, une fois par tour). */
+function canHeroAttack(player: PlayerState): boolean {
+  return player.linkLevel >= 3 && Boolean(player.heroCanAttack);
 }
 
 function buildInitialState(deck1Id: string, deck2Id: string): GameState {
@@ -91,6 +97,8 @@ function getEffectiveHeroAttack(player: PlayerState): number {
 function applyOathRewards(player: PlayerState, fromLevel: LinkLevel, toLevel: LinkLevel): PlayerState {
   let updated = { ...player, linkLevel: toLevel };
   if (fromLevel < 2 && toLevel >= 2) updated = { ...updated, heroHealth: updated.heroHealth + OATH_HEAL };
+  // La Lame se manifeste : le héros peut frapper dès ce tour.
+  if (fromLevel < 3 && toLevel >= 3) updated = { ...updated, heroCanAttack: true };
   if (fromLevel < 4 && toLevel >= 4) updated = { ...updated, heroShield: updated.heroShield + ARMOR_SHIELD_BONUS };
   return updated;
 }
@@ -189,6 +197,10 @@ interface GameStore {
   endTurn: () => void;
   attackUnit: (playerId: string, attackerInstanceId: string, defenderInstanceId: string) => void;
   attackHero: (playerId: string, attackerInstanceId: string) => void;
+  /** Frappe de la Lame d'Éclat (Lien 3) sur une unité ennemie ; le héros subit la riposte. */
+  heroAttackUnit: (playerId: string, defenderInstanceId: string) => void;
+  /** Frappe de la Lame d'Éclat sur le héros ennemi (interceptée par une Couverture du héros). */
+  heroAttackHero: (playerId: string) => void;
   declareGuard: (playerId: string, protectorInstanceId: string, protectedTarget: 'hero' | string) => void;
   useHeroPower: (playerId: string, targetInstanceId: string) => void;
   loadGame: (game: GameState) => void;
@@ -349,6 +361,15 @@ export const useGameStore = create<GameStore>((set) => ({
           };
           break;
         }
+        case 'lash': {
+          const target = opponent.board.find((u) => u.instanceId === targetInstanceId);
+          if (!target) return state;
+          const damaged = damageUnit(target, card.effectValue ?? 2);
+          const updated = damaged ? { ...damaged, isLashed: true } : null;
+          updatedOpponent = applyUnitDamageToBoard(opponent, target, updated);
+          if (!updated) updatedPlayer = gainLinkIfTrigger(updatedPlayer, 'destruction');
+          break;
+        }
         case 'bounce': {
           const target = opponent.board.find((u) => u.instanceId === targetInstanceId);
           if (!target) return state;
@@ -415,12 +436,86 @@ export const useGameStore = create<GameStore>((set) => ({
         unit.instanceId === protectorInstanceId ? { ...unit, guarding: protectedTarget } : unit,
       );
 
+      // Se placer en Couverture nourrit le Lien des Windrunners (une fois par unité).
+      let updatedPlayer: PlayerState = { ...player, board: updatedBoard };
+      if (!protector.guarding) updatedPlayer = gainLinkIfTrigger(updatedPlayer, 'protection');
+
       return {
         game: {
           ...state.game,
-          players: { ...state.game.players, [playerId]: { ...player, board: updatedBoard } },
+          players: { ...state.game.players, [playerId]: updatedPlayer },
         },
       };
+    }),
+
+  heroAttackUnit: (playerId, defenderInstanceId) =>
+    set((state) => {
+      if (state.game.winnerId) return state;
+      const attackerPlayer = state.game.players[playerId];
+      const opponentId = findOtherPlayerId(state.game, playerId);
+      const defenderPlayer = state.game.players[opponentId];
+      if (!attackerPlayer || !defenderPlayer || !canHeroAttack(attackerPlayer)) return state;
+
+      const declaredDefender = defenderPlayer.board.find((u) => u.instanceId === defenderInstanceId);
+      if (!declaredDefender) return state;
+      const guard = defenderPlayer.board.find((u) => u.guarding === declaredDefender.instanceId);
+      const actualDefender = guard ?? declaredDefender;
+
+      const heroDamage = getEffectiveHeroAttack(attackerPlayer);
+      const retaliation = getEffectiveAttack(defenderPlayer, actualDefender);
+      const updatedDefenderUnit = damageUnit(actualDefender, heroDamage);
+
+      let updatedDefenderPlayer: PlayerState = guard
+        ? gainLinkIfTrigger(defenderPlayer, 'protection')
+        : defenderPlayer;
+      updatedDefenderPlayer = applyUnitDamageToBoard(updatedDefenderPlayer, actualDefender, updatedDefenderUnit);
+
+      // Le héros encaisse la riposte de l'unité frappée (le bouclier absorbe d'abord).
+      let updatedAttackerPlayer = damageHero({ ...attackerPlayer, heroCanAttack: false }, retaliation);
+      if (!updatedDefenderUnit) updatedAttackerPlayer = gainLinkIfTrigger(updatedAttackerPlayer, 'destruction');
+
+      const nextGame: GameState = {
+        ...state.game,
+        players: {
+          ...state.game.players,
+          [playerId]: updatedAttackerPlayer,
+          [opponentId]: updatedDefenderPlayer,
+        },
+      };
+      return { game: { ...nextGame, winnerId: checkWinner(nextGame) } };
+    }),
+
+  heroAttackHero: (playerId) =>
+    set((state) => {
+      if (state.game.winnerId) return state;
+      const attackerPlayer = state.game.players[playerId];
+      const opponentId = findOtherPlayerId(state.game, playerId);
+      const defenderPlayer = state.game.players[opponentId];
+      if (!attackerPlayer || !defenderPlayer || !canHeroAttack(attackerPlayer)) return state;
+
+      const heroDamage = getEffectiveHeroAttack(attackerPlayer);
+      const guard = defenderPlayer.board.find((u) => u.guarding === 'hero');
+      let updatedAttackerPlayer: PlayerState = { ...attackerPlayer, heroCanAttack: false };
+      let updatedDefenderPlayer: PlayerState;
+
+      if (guard) {
+        const updatedGuard = damageUnit(guard, heroDamage);
+        updatedDefenderPlayer = applyUnitDamageToBoard(gainLinkIfTrigger(defenderPlayer, 'protection'), guard, updatedGuard);
+        updatedAttackerPlayer = damageHero(updatedAttackerPlayer, getEffectiveAttack(defenderPlayer, guard));
+        if (!updatedGuard) updatedAttackerPlayer = gainLinkIfTrigger(updatedAttackerPlayer, 'destruction');
+      } else {
+        updatedDefenderPlayer = damageHero(defenderPlayer, heroDamage);
+      }
+
+      const nextGame: GameState = {
+        ...state.game,
+        players: {
+          ...state.game.players,
+          [playerId]: updatedAttackerPlayer,
+          [opponentId]: updatedDefenderPlayer,
+        },
+      };
+      return { game: { ...nextGame, winnerId: checkWinner(nextGame) } };
     }),
 
   useHeroPower: (playerId, targetInstanceId) =>
@@ -607,6 +702,7 @@ export const useGameStore = create<GameStore>((set) => ({
         maxStormlight: updatedMaxStormlight,
         stormlight: updatedMaxStormlight,
         heroAbilityUsedThisTurn: false,
+        heroCanAttack: nextPlayer.linkLevel >= 3,
         board: drawn.board.map((unit) =>
           unit.isLashed ? { ...unit, isLashed: false, canAttack: false } : { ...unit, canAttack: true },
         ),
@@ -624,4 +720,4 @@ export const useGameStore = create<GameStore>((set) => ({
     }),
 }));
 
-export { getEffectiveAttack, getEffectiveHeroAttack };
+export { getEffectiveAttack, getEffectiveHeroAttack, canHeroAttack };
