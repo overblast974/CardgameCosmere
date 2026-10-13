@@ -251,6 +251,10 @@
   gap: 3px;
 }
 
+.battlefield__guard-btn--move {
+  opacity: 0.75;
+}
+
 .battlefield__guard-btn {
   background: rgba(10, 20, 36, 0.85);
   color: #a9cdec;

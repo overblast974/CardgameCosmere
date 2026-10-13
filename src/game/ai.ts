@@ -1,6 +1,6 @@
 import type { GameState, PlayerState, UnitInPlay } from '../types/game';
 import type { Card } from '../types/card';
-import { MAX_BOARD_UNITS, canHeroAttack, getEffectiveAttack, getEffectiveHeroAttack } from '../store/gameStore';
+import { MAX_BOARD_UNITS, canHeroAttack, getEffectiveAttack, getEffectiveHeroAttack, unitHasKeyword } from '../store/gameStore';
 import { getDeckBundle } from '../data/cards/loader';
 
 /**
@@ -28,12 +28,22 @@ function otherPlayerId(game: GameState, playerId: string): string {
   return Object.keys(game.players).find((id) => id !== playerId) ?? playerId;
 }
 
-/** L'unité qui encaisse réellement une attaque visant `target` (Couverture). */
-function defenderFor(enemy: PlayerState, target: UnitInPlay | 'hero'): UnitInPlay | undefined {
+/** L'unité qui encaisse réellement une attaque visant `target` (Couverture, ignorée par une unité qui Vole). */
+function defenderFor(enemy: PlayerState, target: UnitInPlay | 'hero', attacker?: UnitInPlay): UnitInPlay | undefined {
   const key = target === 'hero' ? 'hero' : target.instanceId;
-  const guard = enemy.board.find((u) => u.guarding === key);
+  const guard = attacker && unitHasKeyword(attacker, 'vol') ? undefined : enemy.board.find((u) => u.guarding === key);
   if (guard) return guard;
   return target === 'hero' ? undefined : target;
+}
+
+/** Riposte du héros ennemi quand une unité l'attaque (Lame d'Éclat, Lien 3). */
+function heroRetaliation(enemy: PlayerState): number {
+  return enemy.linkLevel >= 3 ? getEffectiveHeroAttack(enemy) : 0;
+}
+
+/** Mulligan de l'IA : elle renvoie ses cartes à 5+ de coût pour une main jouable tôt. */
+export function chooseMulligan(player: PlayerState): number[] {
+  return player.hand.map((card, index) => (card.cost >= 5 ? index : -1)).filter((i) => i >= 0);
 }
 
 function affordable(me: PlayerState, card: Card): boolean {
@@ -107,14 +117,17 @@ export function chooseNextAction(game: GameState, playerId: string): AiAction {
         if (pricey && pricey.score >= 4) return { type: 'playTargeted', index, targetInstanceId: pricey.item.instanceId };
         break;
       }
-      case 'buff': {
-        const striker = bestBy(
-          me.board.filter((u) => u.canAttack && !u.isLashed),
-          (u) => getEffectiveAttack(me, u),
-        );
+      case 'buff':
+      case 'equip': {
+        // Un équipement va sur une unité durable (pas le Spren, qui se dissipe).
+        const carriers = me.board.filter((u) => !u.isLashed && (card.effectType === 'buff' ? u.canAttack : !u.isSpren));
+        const striker = bestBy(carriers, (u) => getEffectiveAttack(me, u) + u.currentHealth);
         if (striker) return { type: 'playTargeted', index, targetInstanceId: striker.item.instanceId };
         break;
       }
+      case 'aoe-buff':
+        if (me.board.length >= 2) return { type: 'play', index };
+        break;
       default:
         break;
     }
@@ -135,7 +148,7 @@ export function chooseNextAction(game: GameState, playerId: string): AiAction {
   }
 
   // 6. Couverture sur le héros (nourrit aussi le Lien des Windrunners).
-  const guard = me.board.find((u) => u.card.keywords?.includes('couverture') && !u.guarding);
+  const guard = me.board.find((u) => unitHasKeyword(u, 'couverture') && !u.guarding);
   if (guard) return { type: 'guard', protectorInstanceId: guard.instanceId, target: 'hero' };
 
   // 7. Attaques des unités : meilleur échange, sinon le visage s'il est libre.
@@ -148,20 +161,26 @@ export function chooseNextAction(game: GameState, playerId: string): AiAction {
       if (!bestAttack || score > bestAttack.score) bestAttack = { action, score };
     };
     for (const target of enemy.board) {
-      const defender = defenderFor(enemy, target) ?? target;
+      const defender = defenderFor(enemy, target, attacker) ?? target;
       const kill = defender.currentHealth <= myAtk;
       const die = attacker.currentHealth <= getEffectiveAttack(enemy, defender);
       const score = (kill ? valueOf(enemy, defender) + 2 : 0) - (die ? valueOf(me, attacker) : 0) + (kill && !die ? 3 : 0);
       consider({ type: 'attack', attackerInstanceId: attacker.instanceId, defenderInstanceId: target.instanceId }, score);
     }
-    if (heroGuard) {
-      const kill = heroGuard.currentHealth <= myAtk;
-      const die = attacker.currentHealth <= getEffectiveAttack(enemy, heroGuard);
-      const score = (kill ? valueOf(enemy, heroGuard) + 2 : 0) - (die ? valueOf(me, attacker) : 0);
+    const myHeroGuard = defenderFor(enemy, 'hero', attacker);
+    if (myHeroGuard) {
+      const kill = myHeroGuard.currentHealth <= myAtk;
+      const die = attacker.currentHealth <= getEffectiveAttack(enemy, myHeroGuard);
+      const score = (kill ? valueOf(enemy, myHeroGuard) + 2 : 0) - (die ? valueOf(me, attacker) : 0);
       consider({ type: 'attackHero', attackerInstanceId: attacker.instanceId }, score);
     } else {
       const lethal = myAtk >= enemy.heroHealth + enemy.heroShield;
-      consider({ type: 'attackHero', attackerInstanceId: attacker.instanceId }, myAtk + (lethal ? 100 : 0));
+      // Le héros armé riposte : on n'envoie pas une unité mourir pour rien (sauf létal).
+      const die = attacker.currentHealth <= heroRetaliation(enemy) && !attacker.indestructible;
+      consider(
+        { type: 'attackHero', attackerInstanceId: attacker.instanceId },
+        myAtk + (lethal ? 100 : 0) - (die ? valueOf(me, attacker) : 0),
+      );
     }
   }
   if (bestAttack !== null) {

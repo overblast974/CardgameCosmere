@@ -6,7 +6,7 @@ import { HeroSheet } from './HeroSheet';
 import { LoopVideo } from './LoopVideo';
 import { cardArt, cardIcons, heroLoopFor, heroStageArtFor, prefersStillMedia } from '../assets/artwork';
 import { getDeckBundle } from '../data/cards/loader';
-import { getEffectiveHeroAttack } from '../store/gameStore';
+import { HAND_LIMIT, getEffectiveHeroAttack } from '../store/gameStore';
 import './HeroPanel.css';
 
 const HERO_GLYPHS: Record<string, string> = {
@@ -111,7 +111,11 @@ export function HeroPanel({
               <span className="hero-panel__name">{player.heroCard.name}</span>
               <span className="hero-panel__player">
                 {player.name}
-                {compact && <> · Main {player.hand.length} · Pioche {player.deck.length}</>}
+                {compact ? (
+                  <> · Main {player.hand.length}/{HAND_LIMIT} · Pioche {player.deck.length}</>
+                ) : (
+                  <> · Pioche {player.deck.length}</>
+                )}
               </span>
             </div>
             <div className="hero-panel__orbs">

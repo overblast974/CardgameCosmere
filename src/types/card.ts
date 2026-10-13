@@ -30,8 +30,9 @@ export const LINK_LEVEL_NAMES: Record<LinkLevel, string> = {
  * - couverture : peut s'interposer pour protéger un allié ou le héros.
  * - obstination : survit une fois à un coup fatal (reste à 1 PV).
  * - zele : peut attaquer dès son arrivée en jeu.
+ * - vol : ignore les Couvertures quand elle attaque.
  */
-export type Keyword = 'couverture' | 'obstination' | 'zele';
+export type Keyword = 'couverture' | 'obstination' | 'zele' | 'vol';
 
 /**
  * Effets résolus par le moteur pour les Surges et Fabrials :
@@ -44,11 +45,18 @@ export type Keyword = 'couverture' | 'obstination' | 'zele';
  * - aoe-damage : inflige effectValue dégâts à toutes les unités ennemies.
  * - lash : inflige effectValue dégâts à une unité ennemie ciblée, qui ne peut
  *   pas attaquer à son prochain tour si elle survit (projetée contre le ciel).
+ * - equip : une unité alliée ciblée gagne +effectAttack ATK et +effectHealth PV
+ *   (équipement : Lame ou Plaque prêtée).
+ * - aoe-buff : toutes les unités alliées gagnent +effectValue/+effectValue.
+ * - heal : le héros regagne effectValue PV.
  */
 export type CardEffectType =
   | 'damage'
   | 'disable'
   | 'lash'
+  | 'equip'
+  | 'aoe-buff'
+  | 'heal'
   | 'bounce'
   | 'buff'
   | 'draw'
@@ -66,12 +74,19 @@ export interface BaseCard {
   keywords?: Keyword[];
 }
 
+/** Cri d'arrivée d'une unité : effet résolu quand elle entre en jeu. */
+export interface ArrivalEffect {
+  effectType: 'draw' | 'stormlight' | 'link' | 'aoe-damage' | 'heal';
+  effectValue: number;
+}
+
 /** Unité Radiant classique (héros ou non). */
 export interface RadiantCard extends BaseCard {
   type: 'radiant';
   attack: number;
   health: number;
   isHero?: boolean;
+  arrival?: ArrivalEffect;
   /** Référence à la carte Spren liée si cette carte est un héros. */
   bondedSprenId?: string;
 }
@@ -98,6 +113,8 @@ export interface SurgeCard extends BaseCard {
   effect: string;
   effectType?: CardEffectType;
   effectValue?: number;
+  effectAttack?: number;
+  effectHealth?: number;
 }
 
 /** Équipement ou consommable technologique. */
@@ -106,6 +123,8 @@ export interface FabrialCard extends BaseCard {
   effect: string;
   effectType?: CardEffectType;
   effectValue?: number;
+  effectAttack?: number;
+  effectHealth?: number;
   durationTurns?: number;
 }
 
@@ -115,6 +134,7 @@ export interface HerautCard extends BaseCard {
   attack: number;
   health: number;
   effect: string;
+  arrival?: ArrivalEffect;
 }
 
 /** Carte légendaire unique par deck, coût 10. */
@@ -190,6 +210,12 @@ export interface HeroDefinition {
   oaths: Record<1 | 2 | 3 | 4, string>;
   /** Cartes arme / armure qui se matérialisent aux niveaux de Lien indiqués. */
   manifestations: ManifestationCard[];
+  /**
+   * Avatar du héros : carte Radiant ajoutée à la main au Lien 4. Le héros
+   * descend au combat ; s'il est détruit, le héros subit 5 dégâts et la carte
+   * revient en main au tour suivant.
+   */
+  avatar?: RadiantCard;
 }
 
 export interface Deck {

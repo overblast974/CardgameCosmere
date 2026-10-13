@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { MAX_BOARD_UNITS, canHeroAttack, getEffectiveAttack, useGameStore } from '../store/gameStore';
+import { MAX_BOARD_UNITS, canHeroAttack, getEffectiveAttack, unitHasKeyword, useGameStore } from '../store/gameStore';
+import type { DeckOverrides } from '../store/gameStore';
 import { useFxStore } from '../store/fxStore';
 import { getDeckBundle } from '../data/cards/loader';
 import { CardComponent } from './CardComponent';
@@ -7,10 +8,11 @@ import { HeroPanel } from './HeroPanel';
 import { PlayerHand } from './PlayerHand';
 import { CombatFX } from './CombatFX';
 import { OathCeremony } from './OathCeremony';
+import { MulliganOverlay } from './MulliganOverlay';
 import { BattlefieldMap } from './BattlefieldMap';
 import { captureFxRects, diffAndSpawn, heroFxId, lunge, playClipOn } from '../game/combatFx';
 import { useDragSource } from '../game/useDragSource';
-import { chooseNextAction } from '../game/ai';
+import { chooseMulligan, chooseNextAction } from '../game/ai';
 import type { AiAction } from '../game/ai';
 import type { DragSource } from '../game/useDragSource';
 import type { FxKind } from '../store/fxStore';
@@ -36,6 +38,8 @@ interface GameBoardProps {
   hotseat?: boolean;
   /** Joueur piloté par l'IA (mode solo) : ses tours se jouent tout seuls. */
   aiPlayerId?: string;
+  /** Listes de cartes personnalisées, réutilisées quand on rejoue. */
+  deckOverrides?: DeckOverrides;
   onExit?: () => void;
 }
 
@@ -114,6 +118,7 @@ function isTargetedCard(card: SurgeCard | FabrialCard): 'enemy' | 'ally' | null 
     case 'bounce':
       return 'enemy';
     case 'buff':
+    case 'equip':
       return 'ally';
     default:
       return null;
@@ -136,6 +141,9 @@ function spellFxKind(card: Card): FxKind {
       case 'bounce':
         return 'bounce';
       case 'buff':
+      case 'equip':
+      case 'aoe-buff':
+      case 'heal':
         return 'buff';
     }
   }
@@ -161,7 +169,10 @@ function spellClip(card: Card): VfxClip | undefined {
     case 'sphere-de-jugement':
     case 'loi-du-ciel':
     case 'cri-du-pont-quatre':
+    case 'vol-au-dessus-des-gouffres':
       return 'stormlight';
+    case 'sentence':
+      return 'division';
     default:
       return undefined;
   }
@@ -200,7 +211,7 @@ function parseDrop(target: string | null): { zone: string; id?: string } | null 
   return { zone, id };
 }
 
-export function GameBoard({ localPlayerId = 'player1', hotseat = false, aiPlayerId, onExit }: GameBoardProps) {
+export function GameBoard({ localPlayerId = 'player1', hotseat = false, aiPlayerId, deckOverrides, onExit }: GameBoardProps) {
   const game = useGameStore((state) => state.game);
   const playCard = useGameStore((state) => state.playCard);
   const playTargetedCard = useGameStore((state) => state.playTargetedCard);
@@ -211,6 +222,7 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, aiPlayer
   const heroAttackHero = useGameStore((state) => state.heroAttackHero);
   const declareGuard = useGameStore((state) => state.declareGuard);
   const triggerHeroPower = useGameStore((state) => state.useHeroPower);
+  const mulligan = useGameStore((state) => state.mulligan);
   const startGame = useGameStore((state) => state.startGame);
 
   const [mode, setMode] = useState<ActionMode>({ type: 'idle' });
@@ -394,7 +406,7 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, aiPlayer
   const handleLocalUnitClick = (unit: UnitInPlay) => {
     if (!isLocalTurn) return;
     if (mode.type === 'guard') {
-      declareGuard(perspectiveId, mode.protectorInstanceId, unit.instanceId);
+      if (unit.instanceId !== mode.protectorInstanceId) declareGuard(perspectiveId, mode.protectorInstanceId, unit.instanceId);
       resetMode();
       return;
     }
@@ -442,6 +454,13 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, aiPlayer
     resetMode();
   };
 
+  // L'IA fait son mulligan dès le début de la partie (elle renvoie ses cartes chères).
+  useEffect(() => {
+    if (!aiPlayerId) return;
+    const ai = game.players[aiPlayerId];
+    if (ai && !ai.mulliganDone) mulligan(aiPlayerId, chooseMulligan(ai));
+  }, [game, aiPlayerId, mulligan]);
+
   // Tour de l'IA : une action toutes les AI_STEP_MS, jusqu'à la fin de son tour.
   useEffect(() => {
     if (!aiPlayerId || game.winnerId || game.activePlayerId !== aiPlayerId) return;
@@ -487,7 +506,12 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, aiPlayer
               onClick={() => {
                 setMode({ type: 'idle' });
                 setPassPending(false);
-                startGame(game.players.player1.deckId, game.players.player2.deckId);
+                startGame(
+                  game.players.player1.deckId,
+                  game.players.player2.deckId,
+                  [game.players.player1.name, game.players.player2.name],
+                  deckOverrides,
+                );
               }}
             >
               ⚔️ Rejouer
@@ -517,6 +541,9 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, aiPlayer
     isLocalTurn && localPlayer.linkLevel >= 3 && !localPlayer.heroAbilityUsedThisTurn && opponent.board.length > 0;
   const heroArmed = isLocalTurn && canHeroAttack(localPlayer);
   const draggingIndex = drag?.src.kind === 'hand' ? drag.src.index : null;
+  // Mulligan : au premier tour de chaque joueur (en ligne, les deux peuvent le faire en même temps).
+  const mulliganOpen =
+    !localPlayer.mulliganDone && game.turn <= 2 && !passPending && (hotseat ? isLocalTurn : perspectiveId !== aiPlayerId);
   const dragSrc = drag?.src;
   const draggedUnit =
     dragSrc?.kind === 'unit' ? localPlayer.board.find((u) => u.instanceId === dragSrc.instanceId) : undefined;
@@ -540,6 +567,14 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, aiPlayer
             </button>
           </div>
         </div>
+      )}
+
+      {mulliganOpen && (
+        <MulliganOverlay
+          playerName={localPlayer.name}
+          hand={localPlayer.hand}
+          onConfirm={(indices) => mulligan(perspectiveId, indices)}
+        />
       )}
 
       {preview && (
@@ -624,6 +659,7 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, aiPlayer
               <CardComponent
                 key={unit.instanceId}
                 card={unit.card}
+                sprenLevel={opponent.linkLevel}
                 fxId={unit.instanceId}
                 dropId={`enemy-unit:${unit.instanceId}`}
                 currentAttack={getEffectiveAttack(opponent, unit)}
@@ -655,6 +691,7 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, aiPlayer
               <div key={unit.instanceId} className="battlefield__slot">
                 <CardComponent
                   card={unit.card}
+                  sprenLevel={localPlayer.linkLevel}
                   fxId={unit.instanceId}
                   dropId={`ally-unit:${unit.instanceId}`}
                   currentAttack={getEffectiveAttack(localPlayer, unit)}
@@ -675,14 +712,14 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, aiPlayer
                   handlers={bind({ kind: 'unit', instanceId: unit.instanceId }, { verticalOnly: true })}
                   onClick={() => handleLocalUnitClick(unit)}
                 />
-                {isLocalTurn && unit.card.keywords?.includes('couverture') && !unit.guarding && mode.type === 'idle' && (
+                {isLocalTurn && unitHasKeyword(unit, 'couverture') && mode.type === 'idle' && (
                   <button
                     type="button"
-                    className="battlefield__guard-btn"
-                    title="Se placer en Couverture"
+                    className={`battlefield__guard-btn${unit.guarding ? ' battlefield__guard-btn--move' : ''}`}
+                    title={unit.guarding ? 'Changer la cible protégée' : 'Se placer en Couverture'}
                     onClick={() => setMode({ type: 'guard', protectorInstanceId: unit.instanceId })}
                   >
-                    🛡️ Protéger
+                    {unit.guarding ? '🛡️ Déplacer' : '🛡️ Protéger'}
                   </button>
                 )}
               </div>

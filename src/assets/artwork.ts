@@ -80,6 +80,15 @@ export const cardIcons = keyByFilename(iconModules);
 /** Stades d'évolution des héros, indexés par `<heroId>-<niveau>`. */
 export const heroStageArt = keyByFilename(heroModules);
 
+// L'Avatar du héros (carte reçue au Lien 4) reprend le stade final du héros.
+const AVATAR_STAGE: Record<string, string> = {
+  'kaladin-avatar': 'kaladin-stormblessed-4',
+  'szeth-avatar': 'szeth-vallano-4',
+};
+for (const [avatarId, stage] of Object.entries(AVATAR_STAGE)) {
+  if (!cardArt[avatarId] && heroStageArt[stage]) cardArt[avatarId] = heroStageArt[stage];
+}
+
 /** Variantes de format d'une même vidéo (le navigateur choisit celle qu'il lit). */
 export interface VideoSources {
   mp4?: string;

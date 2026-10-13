@@ -12,6 +12,14 @@ export interface UnitInPlay {
   guarding?: string;
   /** Obstination de Lopen : a déjà survécu une fois à un coup fatal. */
   hasSurvivedLethal: boolean;
+  /** Mots-clés effectifs quand ils diffèrent de la carte (Spren selon son niveau). */
+  keywords?: string[];
+  /** Le Spren du héros, invoqué par le Lien : ne va jamais au cimetière, revient au tour suivant. */
+  isSpren?: boolean;
+  /** Ne peut pas descendre sous 1 PV (Spren au Lien 4 tant que le héros vit). */
+  indestructible?: boolean;
+  /** Couverture : le Lien a déjà été accordé pour cette unité (une fois par unité). */
+  guardLinkGranted?: boolean;
 }
 
 export interface PlayerState {
@@ -32,6 +40,10 @@ export interface PlayerState {
   heroAbilityUsedThisTurn: boolean;
   /** Lame d'Éclat (Lien 3) : le héros peut attaquer une fois par tour. */
   heroCanAttack?: boolean;
+  /** Mulligan de départ déjà fait (ou refusé). */
+  mulliganDone?: boolean;
+  /** L'Avatar du héros a été détruit : il revient en main au début du prochain tour. */
+  avatarReturnPending?: boolean;
 }
 
 export type Phase = 'main' | 'attack' | 'end';

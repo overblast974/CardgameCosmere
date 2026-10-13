@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { MAX_BOARD_UNITS, canHeroAttack, getEffectiveAttack, getEffectiveHeroAttack, useGameStore } from './gameStore';
-import { getCardById } from '../data/cards/loader';
+import { HAND_LIMIT, MAX_BOARD_UNITS, canHeroAttack, getEffectiveAttack, getEffectiveHeroAttack, useGameStore } from './gameStore';
+import { getCardById, validateDeckList } from '../data/cards/loader';
 import type { GameState, PlayerState, UnitInPlay } from '../types/game';
 import type { Card, LinkLevel } from '../types/card';
 
@@ -44,12 +44,21 @@ function patchPlayer(g: GameState, id: 'player1' | 'player2', patch: Partial<Pla
   g.players[id] = { ...g.players[id], ...patch };
 }
 
+/** Modifie l'état courant sans repartir d'une partie neuve. */
+function patchStore(mutate: (g: GameState) => void): void {
+  const g: GameState = structuredClone(game());
+  mutate(g);
+  store().loadGame(g);
+}
+
 beforeEach(() => setup());
 
 describe('mise en place', () => {
-  it('distribue 4 cartes, laisse 16 cartes en pioche et 1 Stormlight au tour 1', () => {
+  it('distribue 4 cartes, laisse 26 cartes en pioche (deck de 30) et 1 Stormlight au tour 1', () => {
     expect(p1().hand).toHaveLength(4);
-    expect(p1().deck).toHaveLength(16);
+    expect(p1().deck).toHaveLength(26);
+    expect(p2().hand).toHaveLength(5); // le second joueur compense l'initiative
+    expect(p2().deck).toHaveLength(25);
     expect(p1().stormlight).toBe(1);
     expect(p1().maxStormlight).toBe(1);
     expect(p1().heroHealth).toBe(30);
@@ -102,7 +111,7 @@ describe('tour de jeu', () => {
     store().endTurn();
     expect(game().activePlayerId).toBe('player2');
     expect(game().turn).toBe(2);
-    expect(p2().hand).toHaveLength(5);
+    expect(p2().hand).toHaveLength(6); // 5 de départ + 1 piochée
     expect(p2().maxStormlight).toBe(2);
     expect(p2().stormlight).toBe(2);
   });
@@ -435,8 +444,8 @@ describe("frappe de la Lame d'Éclat", () => {
     });
     store().heroAttackHero('player2');
     expect(p1().heroHealth).toBe(30);
-    expect(p1().board).toHaveLength(0); // 6 dégâts sur 3 PV
-    expect(p1().linkLevel).toBe(1); // Couverture absorbée : Lien pour Kaladin
+    expect(p1().board.filter((u) => !u.isSpren)).toHaveLength(0); // 6 dégâts sur 3 PV
+    expect(p1().linkLevel).toBe(1); // Couverture absorbée : Lien pour Kaladin (Sylphrena arrive)
     expect(p2().linkLevel).toBe(4); // unité détruite : Lien pour Szeth (3 → 4)
   });
 
@@ -479,5 +488,203 @@ describe('pouvoirs de héros (Lien 3, une fois par tour)', () => {
     const before = game();
     store().useHeroPower('player1', 'g');
     expect(game()).toBe(before);
+  });
+});
+
+describe('nouvelles règles : main, mulligan, régénération, riposte', () => {
+  it(`brûle les cartes piochées au-delà de ${HAND_LIMIT} en main`, () => {
+    setup((g) => {
+      const filler = Array.from({ length: 9 }, () => card('lopen'));
+      patchPlayer(g, 'player2', { hand: filler, deck: [card('division'), card('division'), card('division')] });
+    });
+    store().endTurn(); // p2 pioche 1 : main 10
+    expect(p2().hand).toHaveLength(10);
+    const graveBefore = p2().graveyard.length;
+    patchStore((g) => patchPlayer(g, 'player2', { hand: [...p2().hand, card('loi-du-ciel')].slice(0, 10), stormlight: 10 }));
+    // Loi du Ciel (pioche 2) avec 9 cartes restantes après l'avoir jouée : 1 gardée, 1 brûlée
+    patchStore((g) => patchPlayer(g, 'player2', { hand: [card('loi-du-ciel'), ...Array.from({ length: 9 }, () => card('lopen'))] }));
+    store().playCard('player2', 0);
+    expect(p2().hand).toHaveLength(HAND_LIMIT);
+    expect(p2().graveyard.length).toBe(graveBefore + 2); // la carte jouée + 1 brûlée
+  });
+
+  it('mulligan : remplace les cartes choisies, une seule fois', () => {
+    const hand = p1().hand;
+    store().mulligan('player1', [0, 2]);
+    expect(p1().hand).toHaveLength(4);
+    expect(p1().hand[0]).toBe(hand[1]);
+    expect(p1().hand[1]).toBe(hand[3]);
+    expect(p1().deck).toHaveLength(26);
+    expect(p1().mulliganDone).toBe(true);
+    const before = game();
+    store().mulligan('player1', [0]);
+    expect(game()).toBe(before);
+  });
+
+  it('Esquisse (Lien 1) : +1 PV au début du tour, sans dépasser les PV de base', () => {
+    setup((g) => patchPlayer(g, 'player2', { linkLevel: 1, heroHealth: 20 }));
+    store().endTurn();
+    expect(p2().heroHealth).toBe(21);
+    patchStore((g) => patchPlayer(g, 'player1', { linkLevel: 1, heroHealth: 30 }));
+    store().endTurn();
+    expect(p1().heroHealth).toBe(30);
+  });
+
+  it('sans Lien, pas de régénération', () => {
+    setup((g) => patchPlayer(g, 'player2', { linkLevel: 0, heroHealth: 20 }));
+    store().endTurn();
+    expect(p2().heroHealth).toBe(20);
+  });
+
+  it("le héros riposte à l'unité qui l'attaque dès le Lien 3 (pas avant)", () => {
+    setup((g) => {
+      patchPlayer(g, 'player1', { board: [unit('lopen', 'l', { hasSurvivedLethal: true })] }); // 2/4
+      patchPlayer(g, 'player2', { linkLevel: 2 });
+    });
+    store().attackHero('player1', 'l');
+    expect(p1().board[0].currentHealth).toBe(4); // pas de riposte au Lien 2
+    patchStore((g) => {
+      patchPlayer(g, 'player2', { linkLevel: 3 });
+      g.players.player1.board[0].canAttack = true;
+    });
+    store().attackHero('player1', 'l');
+    expect(p1().board.filter((u) => !u.isSpren)).toHaveLength(0); // riposte 4+2 = 6 ≥ 4 PV
+    expect(p2().linkLevel).toBe(4); // unité détruite par la riposte : Lien pour Szeth
+  });
+});
+
+describe('Spren évolutif', () => {
+  it('entre au Lien 1 avec les stats du niveau, monte au 2, devient la Lame au 3, revient au 4', () => {
+    store().setLinkLevel('player1', 1);
+    const spren = p1().board.find((u) => u.isSpren);
+    expect(spren).toBeDefined();
+    expect([spren!.currentAttack, spren!.currentHealth]).toEqual([1, 1]);
+    expect(spren!.keywords).toContain('vol');
+    store().setLinkLevel('player1', 2);
+    expect(p1().board.find((u) => u.isSpren)!.currentHealth).toBe(2);
+    store().setLinkLevel('player1', 3);
+    expect(p1().board.find((u) => u.isSpren)).toBeUndefined();
+    store().setLinkLevel('player1', 4);
+    const final = p1().board.find((u) => u.isSpren)!;
+    expect([final.currentAttack, final.currentHealth, final.indestructible]).toEqual([3, 3, true]);
+  });
+
+  it('occupe un emplacement : sur plateau plein, il attend une case libre puis revient au début du tour', () => {
+    setup((g) => {
+      const full = Array.from({ length: MAX_BOARD_UNITS }, (_, i) => unit('lopen', `l${i}`));
+      patchPlayer(g, 'player2', { board: full });
+    });
+    store().setLinkLevel('player2', 1);
+    expect(p2().board.find((u) => u.isSpren)).toBeUndefined();
+    patchStore((g) => patchPlayer(g, 'player2', { board: p2().board.slice(0, 4) }));
+    store().endTurn();
+    expect(p2().board.find((u) => u.isSpren)).toBeDefined();
+  });
+
+  it('se dissipe au lieu de mourir (pas de cimetière) et revient au tour suivant', () => {
+    store().setLinkLevel('player1', 1);
+    patchStore((g) => patchPlayer(g, 'player2', { hand: [card('division')], stormlight: 10, maxStormlight: 10 }));
+    store().endTurn();
+    const sprenId = p1().board.find((u) => u.isSpren)!.instanceId;
+    store().playTargetedCard('player2', 0, sprenId);
+    expect(p1().board.find((u) => u.isSpren)).toBeUndefined();
+    expect(p1().graveyard.some((c) => c.type === 'spren')).toBe(false);
+    store().endTurn();
+    expect(p1().board.find((u) => u.isSpren)).toBeDefined();
+  });
+
+  it('au Lien 4 il est indestructible : reste à 1 PV', () => {
+    store().setLinkLevel('player1', 4);
+    patchStore((g) => patchPlayer(g, 'player2', { hand: [card('division')], stormlight: 10, maxStormlight: 10 }));
+    store().endTurn();
+    const sprenId = p1().board.find((u) => u.isSpren)!.instanceId;
+    store().playTargetedCard('player2', 0, sprenId);
+    expect(p1().board.find((u) => u.isSpren)!.currentHealth).toBe(1);
+  });
+
+  it('Vol : ignore la Couverture quand il attaque', () => {
+    store().setLinkLevel('player1', 2);
+    patchStore((g) => {
+      patchPlayer(g, 'player2', { board: [unit('garde-shin', 'g', { guarding: 'hero' })] });
+      g.players.player1.board.forEach((u) => (u.canAttack = true));
+    });
+    const sprenId = p1().board.find((u) => u.isSpren)!.instanceId;
+    store().attackHero('player1', sprenId);
+    expect(p2().heroHealth).toBe(28); // 1 ATK + 1 aura, la garde n'intercepte pas
+    expect(p2().board[0].currentHealth).toBe(4);
+  });
+});
+
+describe('Avatar du héros (Lien 4)', () => {
+  it('rejoint la main au Lien 4, est jouable, et sa mort coûte 5 PV puis revient en main', () => {
+    store().setLinkLevel('player1', 4);
+    const idx = p1().hand.findIndex((c) => c.id === 'kaladin-avatar');
+    expect(idx).toBeGreaterThanOrEqual(0);
+    patchStore((g) => patchPlayer(g, 'player1', { stormlight: 10, board: [] }));
+    store().playCard('player1', p1().hand.findIndex((c) => c.id === 'kaladin-avatar'));
+    const avatar = p1().board.find((u) => u.card.id === 'kaladin-avatar')!;
+    expect(avatar.canAttack).toBe(true); // Zèle
+    patchStore((g) => patchPlayer(g, 'player2', { hand: [card('nightblood')], stormlight: 10, maxStormlight: 10 }));
+    store().endTurn();
+    const healthBefore = p1().heroHealth;
+    const shieldBefore = p1().heroShield;
+    store().playCard('player2', 0);
+    expect(p1().board.find((u) => u.card.id === 'kaladin-avatar')).toBeUndefined();
+    expect(p1().heroShield + p1().heroHealth).toBe(shieldBefore + healthBefore - 5);
+    expect(p1().graveyard.some((c) => c.id === 'kaladin-avatar')).toBe(false);
+    expect(p1().avatarReturnPending).toBe(true);
+    store().endTurn();
+    expect(p1().hand.some((c) => c.id === 'kaladin-avatar')).toBe(true);
+    expect(p1().avatarReturnPending).toBe(false);
+  });
+});
+
+describe('nouvelles cartes', () => {
+  it("Cri d'arrivée : Sigzil pioche 2, Haute Juge inflige 1 à toutes les unités ennemies", () => {
+    setup((g) => {
+      patchPlayer(g, 'player1', { hand: [card('sigzil')], stormlight: 10 });
+      patchPlayer(g, 'player2', { hand: [card('haute-juge')], stormlight: 10, maxStormlight: 10 });
+    });
+    const deckBefore = p1().deck.length;
+    store().playCard('player1', 0);
+    expect(p1().hand).toHaveLength(2);
+    expect(p1().deck).toHaveLength(deckBefore - 2);
+    store().endTurn();
+    store().playCard('player2', 0);
+    expect(p1().board[0].currentHealth).toBe(3); // Sigzil 4/4 → 4/3
+  });
+
+  it('Lame prêtée : +3 ATK ; Plaque prêtée : +4 PV', () => {
+    setup((g) => {
+      patchPlayer(g, 'player1', { hand: [card('lame-pretee'), card('plaque-pretee')], stormlight: 10, board: [unit('lopen', 'l')] });
+    });
+    store().playTargetedCard('player1', 0, 'l');
+    expect(p1().board[0].currentAttack).toBe(5);
+    store().playTargetedCard('player1', 0, 'l');
+    expect(p1().board[0].currentHealth).toBe(8);
+  });
+
+  it('Vol au-dessus des Gouffres : +1/+1 à toutes les unités alliées', () => {
+    setup((g) => {
+      patchPlayer(g, 'player1', { hand: [card('vol-au-dessus-des-gouffres')], stormlight: 10, board: [unit('lopen', 'l'), unit('teft', 't')] });
+    });
+    store().playCard('player1', 0);
+    expect(p1().board.map((u) => [u.currentAttack, u.currentHealth])).toEqual([[3, 5], [5, 6]]);
+  });
+
+  it('Couverture : on peut déplacer la protection, le Lien ne vient que la première fois', () => {
+    setup((g) => patchPlayer(g, 'player1', { board: [unit('bridge-four-soldier', 'b'), unit('lopen', 'l')] }));
+    store().declareGuard('player1', 'b', 'hero');
+    expect(p1().linkLevel).toBe(1);
+    store().declareGuard('player1', 'b', 'l');
+    expect(p1().board.find((u) => u.instanceId === 'b')!.guarding).toBe('l');
+    expect(p1().linkLevel).toBe(1);
+  });
+
+  it('les decks de départ sont valides (30 cartes, 3 copies max, 1 Éclat)', () => {
+    expect(validateDeckList('windrunners-starter', p1().deck.concat(p1().hand).map((c) => c.id))).toEqual([]);
+    expect(validateDeckList('skybreakers-starter', p2().deck.concat(p2().hand).map((c) => c.id))).toEqual([]);
+    expect(validateDeckList('windrunners-starter', Array(30).fill('honor'))).not.toEqual([]);
+    expect(validateDeckList('windrunners-starter', Array(29).fill('lopen'))).not.toEqual([]);
   });
 });
