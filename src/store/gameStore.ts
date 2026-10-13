@@ -5,6 +5,8 @@ import { buildDeckCards, getDeckBundle, DEFAULT_DECK_IDS } from '../data/cards/l
 
 const STARTING_HAND_SIZE = 4;
 const MAX_STORMLIGHT = 10;
+/** Emplacements d'unités par camp sur le plateau. */
+export const MAX_BOARD_UNITS = 5;
 const MAX_LINK_LEVEL: LinkLevel = 4;
 /** Niveau 4 (Plaque d'Éclat) : bouclier gagné en prononçant le serment. */
 const ARMOR_SHIELD_BONUS = 15;
@@ -244,6 +246,8 @@ export const useGameStore = create<GameStore>((set) => ({
       let updatedOpponent: PlayerState = opponent;
 
       if (card.type === 'radiant' || card.type === 'heraut') {
+        // Plateau plein : la carte reste en main.
+        if (player.board.length >= MAX_BOARD_UNITS) return state;
         updatedPlayer = { ...updatedPlayer, board: [...updatedPlayer.board, createUnitInstance(card)] };
         // Cris d'arrivée des Hérauts.
         if (card.id === 'jezrien') {

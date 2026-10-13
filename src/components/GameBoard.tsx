@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { canHeroAttack, getEffectiveAttack, useGameStore } from '../store/gameStore';
+import { MAX_BOARD_UNITS, canHeroAttack, getEffectiveAttack, useGameStore } from '../store/gameStore';
 import { useFxStore } from '../store/fxStore';
 import { getDeckBundle } from '../data/cards/loader';
 import { CardComponent } from './CardComponent';
@@ -205,6 +205,7 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
     const side = targetSideOf(card);
     if (side === 'enemy') return opponent.board.length > 0;
     if (side === 'ally') return localPlayer.board.length > 0;
+    if (card.type === 'radiant' || card.type === 'heraut') return localPlayer.board.length < MAX_BOARD_UNITS;
     return true;
   };
 
@@ -543,8 +544,10 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
       <section className="battlefield" data-drop="battlefield">
         <div className="battlefield__row battlefield__row--enemy">
           <div className="battlefield__units">
-            {opponent.board.length === 0 && <span className="battlefield__empty">Aucune unité</span>}
-            {opponent.board.map((unit) => (
+            {Array.from({ length: MAX_BOARD_UNITS }, (_, slot) => opponent.board[slot]).map((unit, slot) =>
+              unit === undefined ? (
+                <div key={`empty-${slot}`} className="battlefield__placeholder" aria-hidden="true" />
+              ) : (
               <CardComponent
                 key={unit.instanceId}
                 card={unit.card}
@@ -559,7 +562,8 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
                 compact
                 onClick={() => handleOpponentUnitClick(unit)}
               />
-            ))}
+              ),
+            )}
           </div>
         </div>
 
@@ -567,12 +571,14 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
 
         <div className={`battlefield__row battlefield__row--ally${fieldDroppable ? ' battlefield__row--droppable' : ''}`} data-drop="ally-field">
           <div className="battlefield__units">
-            {localPlayer.board.length === 0 && (
-              <span className="battlefield__empty">
-                {isLocalTurn ? 'Glissez une carte ici pour la jouer' : 'Aucune unité'}
-              </span>
-            )}
-            {localPlayer.board.map((unit) => (
+            {Array.from({ length: MAX_BOARD_UNITS }, (_, slot) => localPlayer.board[slot]).map((unit, slot) =>
+              unit === undefined ? (
+                <div
+                  key={`empty-${slot}`}
+                  className={`battlefield__placeholder${fieldDroppable ? ' battlefield__placeholder--open' : ''}`}
+                  aria-hidden="true"
+                />
+              ) : (
               <div key={unit.instanceId} className="battlefield__slot">
                 <CardComponent
                   card={unit.card}
@@ -607,7 +613,8 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
                   </button>
                 )}
               </div>
-            ))}
+              ),
+            )}
           </div>
         </div>
       </section>

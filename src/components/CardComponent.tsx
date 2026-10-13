@@ -1,6 +1,6 @@
-import type { ButtonHTMLAttributes } from 'react';
+import type { ButtonHTMLAttributes, CSSProperties } from 'react';
 import type { Card, LinkLevel } from '../types/card';
-import { cardArt, cardIcons } from '../assets/artwork';
+import { cardArt, cardIcons, frameArt, frameTextureFor } from '../assets/artwork';
 import './CardComponent.css';
 
 const TYPE_LABELS: Record<Card['type'], string> = {
@@ -13,9 +13,10 @@ const TYPE_LABELS: Record<Card['type'], string> = {
   manifestation: 'Manifestation',
 };
 
+/** Libellés d'Ordre abrégés pour tenir sur la ligne de type entre crochets. */
 const ORDER_LABELS: Record<string, string> = {
-  Windrunner: 'Coureur du Vent',
-  Skybreaker: 'Chasseur du Ciel',
+  Windrunner: 'C. du Vent',
+  Skybreaker: 'C. du Ciel',
   Neutre: 'Neutre',
 };
 
@@ -168,16 +169,33 @@ export function CardComponent({
 
   const hasStats = attack !== undefined || health !== undefined;
 
+  // Habillage : texture de cadre par type / Ordre, parchemin et ornement de coin.
+  const texture = frameTextureFor(card.type, card.order);
+  const frameStyle = {
+    '--frame-tex': texture ? `url(${texture})` : 'none',
+    '--parchment': frameArt['tex-parchment'] ? `url(${frameArt['tex-parchment']})` : 'none',
+    '--corner': frameArt.corner ? `url(${frameArt.corner})` : 'none',
+  } as CSSProperties;
+
   return (
     <button
       type="button"
       className={classes}
+      style={frameStyle}
       {...handlers}
       onClick={onClick}
       disabled={disabled}
       data-fx={fxId}
       data-drop={dropId}
     >
+      {frameArt.corner && (
+        <>
+          <span className="card__corner card__corner--tl" />
+          <span className="card__corner card__corner--tr" />
+          <span className="card__corner card__corner--br" />
+          <span className="card__corner card__corner--bl" />
+        </>
+      )}
       {card.type === 'manifestation' ? (
         <span className="card__cost card__cost--link" title="Niveau de Lien requis">
           ✦{card.linkLevel}

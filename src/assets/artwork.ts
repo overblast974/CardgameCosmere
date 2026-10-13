@@ -45,6 +45,13 @@ const mapModules = import.meta.glob('./maps/*.{webp,png,jpg,jpeg,avif}', {
   import: 'default',
 }) as Record<string, string>;
 
+// Habillage des cartes : textures de cadre par type (`tex-<type>`), parchemin
+// de la boîte de texte (`tex-parchment`) et ornement de coin (`corner`).
+const frameModules = import.meta.glob('./frames/*.{webp,png}', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+
 // Icônes fantasy (game-icons.net, CC-BY 3.0) servant de repli élégant avant
 // que de vraies illustrations soient déposées. Importées en texte brut pour
 // pouvoir les colorier en CSS (fill: currentColor).
@@ -103,6 +110,19 @@ export const backgroundArt = keyByFilename(bgModules);
 
 /** Cartes de bataille, indexées par nom de fichier (`gouffres-portrait`, `gouffres-landscape`…). */
 export const mapArt = keyByFilename(mapModules);
+
+/** Textures et ornements du cadre des cartes, indexés par nom de fichier. */
+export const frameArt = keyByFilename(frameModules);
+
+/** Texture de cadre d'un type de carte (`tex-radiant`…), ou undefined si non déposée. */
+export function frameTextureFor(type: string, order?: string): string | undefined {
+  // Les Radiants prennent la texture de leur Ordre quand elle existe.
+  if (type === 'radiant' && order) {
+    const byOrder = frameArt[`tex-${order.toLowerCase()}`];
+    if (byOrder) return byOrder;
+  }
+  return frameArt[`tex-${type}`];
+}
 
 /** Fond principal si l'utilisateur en a déposé un, sinon undefined (fond CSS animé). */
 export const mainBackground: string | undefined =

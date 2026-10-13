@@ -1,27 +1,43 @@
+/*
+ * Cadre de carte façon carte à collectionner : plaque texturée par faction
+ * (--frame-tex), liseré doré biseauté, ornements de coin, bandeau de titre
+ * laqué, fenêtre d'illustration à double cadre, ligne de type entre crochets
+ * et boîte de texte sur parchemin. Les textures sont injectées en variables
+ * CSS par le composant ; sans texture, la couleur de faction (--frame) sert.
+ */
+
 .card {
   --frame: #3f7fbf;
   --frame-glow: rgba(63, 127, 191, 0.25);
+  --frame-tex: none;
+  --parchment: none;
+  --corner: none;
+  --gold: #d2ad5a;
+  --gold-dark: #7a5a1e;
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 4px;
   width: clamp(122px, 31vw, 156px);
-  padding: 5px 5px 13px;
-  border-radius: 13px;
-  /* Cadre métallique teinté par la faction */
+  padding: 8px 8px 16px;
+  border-radius: 10px;
   background:
-    linear-gradient(155deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 32%),
-    linear-gradient(160deg, rgba(8, 10, 17, 0.28), rgba(8, 10, 17, 0.72) 74%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0) 30%, rgba(0, 0, 0, 0.3) 100%),
+    var(--frame-tex) center / cover no-repeat,
+    linear-gradient(160deg, rgba(8, 10, 17, 0.2), rgba(8, 10, 17, 0.6)),
     var(--frame);
-  border: 1px solid rgba(0, 0, 0, 0.55);
+  border: 1px solid #07090f;
+  /* Liseré doré biseauté entre deux traits sombres. */
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.75),
+    inset 0 0 0 3px var(--gold),
+    inset 0 0 0 4px rgba(0, 0, 0, 0.65),
+    0 4px 14px rgba(0, 0, 0, 0.6);
   color: var(--text);
   font-family: inherit;
   text-align: left;
   cursor: pointer;
   flex-shrink: 0;
-  box-shadow:
-    0 4px 14px rgba(0, 0, 0, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   animation: card-in 0.25s ease-out;
 }
@@ -37,16 +53,18 @@
   }
 }
 
-/* Hauteur uniforme des cartes détaillées (main), comme de vraies cartes. */
+/* Hauteur uniforme des cartes détaillées (aperçu, fiche), comme de vraies cartes. */
 .card:not(.card--compact):not(.card--hand) {
-  min-height: 182px;
+  min-height: 190px;
 }
 
 .card:not(:disabled):hover {
   transform: translateY(-5px);
   box-shadow:
-    0 10px 22px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    inset 0 0 0 1px rgba(0, 0, 0, 0.75),
+    inset 0 0 0 3px var(--gold),
+    inset 0 0 0 4px rgba(0, 0, 0, 0.65),
+    0 10px 22px rgba(0, 0, 0, 0.65);
   z-index: 3;
 }
 
@@ -56,9 +74,13 @@
 }
 
 .card--selected {
-  outline: 2px solid var(--gold);
+  outline: 2px solid #ffe08a;
   outline-offset: 1px;
-  box-shadow: 0 0 18px var(--gold-soft);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.75),
+    inset 0 0 0 3px #ffe08a,
+    inset 0 0 0 4px rgba(0, 0, 0, 0.65),
+    0 0 18px var(--gold-soft);
   transform: translateY(-5px);
 }
 
@@ -72,10 +94,18 @@
 @keyframes card-target {
   0%,
   100% {
-    box-shadow: 0 0 6px var(--danger-soft), 0 4px 14px rgba(0, 0, 0, 0.55);
+    box-shadow:
+      inset 0 0 0 1px rgba(0, 0, 0, 0.75),
+      inset 0 0 0 3px var(--gold),
+      inset 0 0 0 4px rgba(0, 0, 0, 0.65),
+      0 0 6px var(--danger-soft);
   }
   50% {
-    box-shadow: 0 0 18px var(--danger-soft), 0 4px 14px rgba(0, 0, 0, 0.55);
+    box-shadow:
+      inset 0 0 0 1px rgba(0, 0, 0, 0.75),
+      inset 0 0 0 3px var(--gold),
+      inset 0 0 0 4px rgba(0, 0, 0, 0.65),
+      0 0 18px var(--danger-soft);
   }
 }
 
@@ -105,12 +135,47 @@
   }
 }
 
+/* ---------- Ornements de coin ---------- */
+
+.card__corner {
+  position: absolute;
+  z-index: 3;
+  width: 24px;
+  height: 24px;
+  background: var(--corner) center / contain no-repeat;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.8));
+}
+
+.card__corner--tl {
+  top: 1px;
+  left: 1px;
+}
+
+.card__corner--tr {
+  top: 1px;
+  right: 1px;
+  transform: rotate(90deg);
+}
+
+.card__corner--br {
+  bottom: 1px;
+  right: 1px;
+  transform: rotate(180deg);
+}
+
+.card__corner--bl {
+  bottom: 1px;
+  left: 1px;
+  transform: rotate(270deg);
+}
+
 /* ---------- Gemme de coût ---------- */
 
 .card__cost {
   position: absolute;
-  top: 1px;
-  left: 1px;
+  top: 3px;
+  left: 3px;
   z-index: 4;
   display: inline-flex;
   align-items: center;
@@ -122,24 +187,39 @@
   font-size: 0.86rem;
   color: #04222e;
   background: radial-gradient(circle at 36% 30%, #c3eefb, #2b93b6 66%, #1b6c88);
-  border: 1px solid #9fe3f2;
+  border: 1px solid #ffe8b0;
   box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.8),
     0 1px 4px rgba(0, 0, 0, 0.65),
     0 0 8px var(--storm-soft),
     inset 0 1px 2px rgba(255, 255, 255, 0.75);
 }
 
-/* ---------- Bandeau titre ---------- */
+.card__cost--link {
+  color: #f4efff;
+  font-size: 0.72rem;
+  background: radial-gradient(circle at 36% 30%, #c3b2f2, #5e46b5 70%);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.8),
+    0 1px 4px rgba(0, 0, 0, 0.65),
+    0 0 8px rgba(138, 111, 216, 0.5),
+    inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+/* ---------- Bandeau titre laqué ---------- */
 
 .card__title {
   display: flex;
   align-items: center;
   min-height: 24px;
-  padding: 3px 6px 3px 25px;
-  border-radius: 6px;
-  background: linear-gradient(180deg, #1b2233, #0e1220);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+  padding: 3px 6px 3px 26px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #2b3246, #141827 55%, #0e1220);
+  border: 1px solid var(--gold-dark);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.5),
+    0 1px 2px rgba(0, 0, 0, 0.7);
 }
 
 .card__name {
@@ -147,10 +227,11 @@
   font-weight: 700;
   font-size: 0.74rem;
   line-height: 1.05;
-  color: #f1ebda;
+  color: #f6ecd0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
 }
 
-/* ---------- Fenêtre d'illustration ---------- */
+/* ---------- Fenêtre d'illustration à double cadre ---------- */
 
 .card__art {
   position: relative;
@@ -158,20 +239,21 @@
   align-items: center;
   justify-content: center;
   height: 50px;
-  border-radius: 5px;
+  border-radius: 3px;
   overflow: hidden;
   background:
     radial-gradient(circle at 50% 130%, var(--frame-glow), transparent 70%),
     linear-gradient(160deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.42));
-  border: 1px solid rgba(0, 0, 0, 0.55);
+  border: 2px solid var(--gold);
   box-shadow:
-    inset 0 0 10px rgba(0, 0, 0, 0.55),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    0 0 0 1px rgba(0, 0, 0, 0.85),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.8),
+    inset 0 0 10px rgba(0, 0, 0, 0.55);
   font-size: 1.7rem;
 }
 
 .card__art--illustrated {
-  height: 104px;
+  height: 108px;
 }
 
 .card__art-img {
@@ -201,6 +283,7 @@
   font-weight: 700;
   color: #f0c9c9;
   background: rgba(120, 30, 30, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 999px;
   padding: 1px 6px;
 }
@@ -210,48 +293,74 @@
   background: rgba(35, 80, 130, 0.9);
 }
 
-/* ---------- Ligne de type ---------- */
+.card__status-badge--locked {
+  color: #e6e1ff;
+  background: rgba(60, 45, 110, 0.92);
+}
+
+/* ---------- Ligne de type entre crochets ---------- */
 
 .card__typeline {
   display: flex;
   justify-content: space-between;
   gap: 4px;
   padding: 2px 6px;
-  border-radius: 4px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.28)), var(--frame);
-  border: 1px solid rgba(0, 0, 0, 0.45);
-  font-size: 0.52rem;
-  letter-spacing: 0.05em;
+  border-radius: 3px;
+  background: rgba(8, 10, 17, 0.78);
+  border: 1px solid rgba(210, 173, 90, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.6);
+  font-size: 0.5rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   font-weight: 700;
-  color: #f4f0e2;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.7);
+  color: #ead9a6;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.9);
+}
+
+.card__typeline::before {
+  content: '[';
+  margin-right: 3px;
+  opacity: 0.7;
+}
+
+.card__typeline::after {
+  content: ']';
+  margin-left: 3px;
+  opacity: 0.7;
 }
 
 .card__typeline-order {
+  flex: 1;
+  text-align: right;
   opacity: 0.85;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* ---------- Boîte de texte ---------- */
+/* ---------- Boîte de texte sur parchemin ---------- */
 
 .card__textbox {
   flex: 1;
   min-height: 34px;
   padding: 4px 6px;
-  border-radius: 6px;
-  background: linear-gradient(180deg, #12151f, #0c0f18);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+  border-radius: 3px;
+  background:
+    linear-gradient(rgba(8, 6, 4, 0.35), rgba(8, 6, 4, 0.35)),
+    var(--parchment) center / cover,
+    #1a140f;
+  border: 1px solid var(--gold-dark);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.55),
+    inset 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .card__text {
   margin: 0;
   font-size: 0.63rem;
   line-height: 1.24;
-  color: #c7cad6;
+  color: #f1e9d6;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.9);
 }
 
 /* Réserve une bande sous le texte pour que les gemmes ATK/PV ne le recouvrent pas. */
@@ -264,7 +373,7 @@
 .card__attack,
 .card__health {
   position: absolute;
-  bottom: 1px;
+  bottom: 2px;
   z-index: 4;
   display: inline-flex;
   align-items: center;
@@ -276,38 +385,37 @@
   font-weight: 800;
   font-size: 0.9rem;
   color: #fff;
-  border: 1px solid;
+  border: 1px solid #ffe8b0;
   box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.85),
     0 1px 4px rgba(0, 0, 0, 0.65),
     inset 0 1px 2px rgba(255, 255, 255, 0.4);
 }
 
 .card__attack {
-  left: 2px;
+  left: 3px;
   background: radial-gradient(circle at 36% 30%, #ffb27a, #c65a26 70%);
-  border-color: #f0a468;
   text-shadow: 0 1px 2px rgba(90, 20, 0, 0.85);
 }
 
 .card__health {
-  right: 2px;
+  right: 3px;
   background: radial-gradient(circle at 36% 30%, #84e3a6, #1f7a45 70%);
-  border-color: #6bd694;
   text-shadow: 0 1px 2px rgba(0, 40, 15, 0.85);
 }
 
 .card__stat--damaged {
   background: radial-gradient(circle at 36% 30%, #f0a0a0, #a12b2b 70%);
-  border-color: #e07777;
 }
 
 .card__stat--buffed {
   box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.85),
     0 0 10px rgba(120, 230, 150, 0.85),
     0 1px 4px rgba(0, 0, 0, 0.6);
 }
 
-/* ---------- Cadres par faction ---------- */
+/* ---------- Teintes de faction (repli sans texture, et halo d'art) ---------- */
 
 .card--radiant {
   --frame: #3f7fbf;
@@ -333,28 +441,9 @@
   --frame: #d8a93a;
   --frame-glow: rgba(216, 169, 58, 0.4);
 }
-
-/* Manifestations (arme / armure du Spren) : cadre argent lumineux. */
 .card--manifestation {
   --frame: #b9c6d8;
   --frame-glow: rgba(207, 216, 230, 0.4);
-}
-
-.card--manifestation .card__art {
-  background:
-    radial-gradient(circle at 50% 60%, rgba(207, 216, 230, 0.22), transparent 70%),
-    linear-gradient(160deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.42));
-}
-
-.card__cost--link {
-  color: #f4efff;
-  font-size: 0.72rem;
-  background: radial-gradient(circle at 36% 30%, #c3b2f2, #5e46b5 70%);
-  border-color: #b9a6f0;
-  box-shadow:
-    0 1px 4px rgba(0, 0, 0, 0.65),
-    0 0 8px rgba(138, 111, 216, 0.5),
-    inset 0 1px 2px rgba(255, 255, 255, 0.5);
 }
 
 /* Manifestation pas encore débloquée. */
@@ -366,18 +455,13 @@
   filter: blur(1.5px);
 }
 
-.card__status-badge--locked {
-  color: #e6e1ff;
-  background: rgba(60, 45, 110, 0.92);
-}
-
 /* Reflet mouvant sur les cartes légendaires (Éclats) et les manifestations. */
 .card--manifestation:not(.card--locked)::after,
 .card--eclat::after {
   content: '';
   position: absolute;
   inset: 0;
-  border-radius: 13px;
+  border-radius: 10px;
   pointer-events: none;
   background: linear-gradient(115deg, transparent 42%, rgba(255, 240, 200, 0.32) 50%, transparent 58%);
   background-size: 250% 100%;
@@ -415,8 +499,13 @@
 .card--hand {
   width: 104px;
   min-height: 0;
-  padding: 4px 4px 12px;
+  padding: 6px 6px 13px;
   gap: 3px;
+}
+
+.card--hand .card__corner {
+  width: 18px;
+  height: 18px;
 }
 
 .card--hand .card__title {
@@ -472,9 +561,15 @@
 /* ---------- Variante compacte (plateau) ---------- */
 
 .card--compact {
-  width: clamp(84px, 22vw, 104px);
-  padding: 4px 4px 11px;
+  width: clamp(62px, 17vw, 104px);
+  padding: 5px 5px 12px;
   gap: 3px;
+  border-radius: 8px;
+}
+
+.card--compact .card__corner {
+  width: 14px;
+  height: 14px;
 }
 
 .card--compact .card__typeline,
@@ -484,11 +579,11 @@
 
 .card--compact .card__title {
   min-height: 18px;
-  padding: 2px 4px 2px 20px;
+  padding: 2px 3px 2px 20px;
 }
 
 .card--compact .card__name {
-  font-size: 0.64rem;
+  font-size: 0.6rem;
 }
 
 .card--compact .card__cost {
@@ -499,10 +594,11 @@
 
 .card--compact .card__art {
   height: 42px;
+  border-width: 1px;
 }
 
 .card--compact .card__art--illustrated {
-  height: 66px;
+  height: 64px;
 }
 
 .card--compact .card__art-icon svg {
@@ -521,8 +617,11 @@
   .card:not(.card--hand):not(.card--compact) {
     width: clamp(112px, 31vw, 140px);
   }
-  .card--compact {
-    width: clamp(80px, 24vw, 102px);
+  .card--compact .card__name {
+    font-size: 0.54rem;
+  }
+  .card--compact .card__art--illustrated {
+    height: 54px;
   }
 }
 
