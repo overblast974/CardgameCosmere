@@ -10,6 +10,8 @@ import { OathCeremony } from './OathCeremony';
 import { BattlefieldMap } from './BattlefieldMap';
 import { captureFxRects, diffAndSpawn, heroFxId, lunge, playClipOn } from '../game/combatFx';
 import { useDragSource } from '../game/useDragSource';
+import { chooseNextAction } from '../game/ai';
+import type { AiAction } from '../game/ai';
 import type { DragSource } from '../game/useDragSource';
 import type { FxKind } from '../store/fxStore';
 import { heroStageArtFor } from '../assets/artwork';
@@ -32,7 +34,67 @@ interface GameBoardProps {
   localPlayerId?: string;
   /** En mode local « hotseat », la perspective suit toujours le joueur actif. */
   hotseat?: boolean;
+  /** Joueur piloté par l'IA (mode solo) : ses tours se jouent tout seuls. */
+  aiPlayerId?: string;
   onExit?: () => void;
+}
+
+/** Délai entre deux actions de l'IA, pour laisser lire les effets. */
+const AI_STEP_MS = 750;
+
+/** Applique une action de l'IA avec les mêmes effets visuels qu'un joueur humain. */
+function applyAiAction(action: AiAction, playerId: string): void {
+  const s = useGameStore.getState();
+  const before = s.game;
+  const me = before.players[playerId];
+  const heroDefinition = getDeckBundle(me.deckId).heroDefinition;
+  switch (action.type) {
+    case 'play': {
+      const card = me.hand[action.index];
+      const clip = card ? spellClip(card) : undefined;
+      runWithFx('damage', () => s.playCard(playerId, action.index), {
+        clip,
+        clipOnFxId: clip === 'stormlight' ? heroFxId(playerId) : undefined,
+      });
+      break;
+    }
+    case 'playTargeted': {
+      const card = me.hand[action.index];
+      runWithFx(card ? spellFxKind(card) : 'spell', () => s.playTargetedCard(playerId, action.index, action.targetInstanceId), {
+        clip: card ? spellClip(card) : undefined,
+      });
+      break;
+    }
+    case 'guard':
+      s.declareGuard(playerId, action.protectorInstanceId, action.target);
+      break;
+    case 'power': {
+      const isLashing = heroDefinition.heroPowerType === 'lashing';
+      runWithFx(isLashing ? 'disable' : 'damage', () => s.useHeroPower(playerId, action.targetInstanceId), {
+        clip: isLashing ? 'lashing' : 'division',
+      });
+      break;
+    }
+    case 'attack':
+      runWithFx('attack', () => s.attackUnit(playerId, action.attackerInstanceId, action.defenderInstanceId), {
+        attackerFxId: action.attackerInstanceId,
+      });
+      break;
+    case 'attackHero':
+      runWithFx('attack', () => s.attackHero(playerId, action.attackerInstanceId), { attackerFxId: action.attackerInstanceId });
+      break;
+    case 'heroStrikeUnit':
+      runWithFx('attack', () => s.heroAttackUnit(playerId, action.defenderInstanceId), { attackerFxId: heroFxId(playerId) });
+      break;
+    case 'heroStrikeHero':
+      runWithFx('attack', () => s.heroAttackHero(playerId), { attackerFxId: heroFxId(playerId) });
+      break;
+    case 'end':
+      s.endTurn();
+      return;
+  }
+  // Garde-fou : une action refusée par le moteur ne doit jamais bloquer l'IA.
+  if (useGameStore.getState().game === before) s.endTurn();
 }
 
 const MODE_HINTS: Record<Exclude<ActionMode['type'], 'idle'>, string> = {
@@ -138,7 +200,7 @@ function parseDrop(target: string | null): { zone: string; id?: string } | null 
   return { zone, id };
 }
 
-export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }: GameBoardProps) {
+export function GameBoard({ localPlayerId = 'player1', hotseat = false, aiPlayerId, onExit }: GameBoardProps) {
   const game = useGameStore((state) => state.game);
   const playCard = useGameStore((state) => state.playCard);
   const playTargetedCard = useGameStore((state) => state.playTargetedCard);
@@ -379,6 +441,17 @@ export function GameBoard({ localPlayerId = 'player1', hotseat = false, onExit }
     else return;
     resetMode();
   };
+
+  // Tour de l'IA : une action toutes les AI_STEP_MS, jusqu'à la fin de son tour.
+  useEffect(() => {
+    if (!aiPlayerId || game.winnerId || game.activePlayerId !== aiPlayerId) return;
+    const timer = window.setTimeout(() => {
+      const current = useGameStore.getState().game;
+      if (current.winnerId || current.activePlayerId !== aiPlayerId) return;
+      applyAiAction(chooseNextAction(current, aiPlayerId), aiPlayerId);
+    }, AI_STEP_MS);
+    return () => window.clearTimeout(timer);
+  }, [game, aiPlayerId]);
 
   // Saisie à la Hearthstone (après les handlers, avant tout retour anticipé :
   // l'ordre des hooks reste stable et les callbacks sont déjà déclarés).

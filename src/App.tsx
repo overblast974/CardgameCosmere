@@ -5,7 +5,7 @@ import { RosharBackground } from './components/RosharBackground';
 import { useGameStore } from './store/gameStore';
 import { useMultiplayerSync } from './firebase/useMultiplayerSync';
 
-type Session = { mode: 'local' } | { mode: 'online'; matchId: string; role: 'player1' | 'player2' };
+type Session = { mode: 'local' } | { mode: 'solo' } | { mode: 'online'; matchId: string; role: 'player1' | 'player2' };
 
 function getInitialSession(): Session | null {
   const params = new URLSearchParams(window.location.search);
@@ -39,6 +39,10 @@ function App() {
           startGame(deck1Id, deck2Id);
           setSession({ mode: 'local' });
         }}
+        onStartSolo={(deck1Id, deck2Id) => {
+          startGame(deck1Id, deck2Id, ['Vous', 'IA']);
+          setSession({ mode: 'solo' });
+        }}
         onJoinMatch={(matchId, role, decks) => {
           // Le créateur du salon fixe les decks ; le joueur qui rejoint
           // recevra l'état complet via la synchro Firebase.
@@ -60,6 +64,7 @@ function App() {
       <GameBoard
         localPlayerId={session.mode === 'online' ? session.role : 'player1'}
         hotseat={session.mode === 'local'}
+        aiPlayerId={session.mode === 'solo' ? 'player2' : undefined}
         onExit={() => {
           clearMatchParams();
           setSession(null);

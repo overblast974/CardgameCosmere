@@ -55,9 +55,9 @@ function canHeroAttack(player: PlayerState): boolean {
   return player.linkLevel >= 3 && Boolean(player.heroCanAttack);
 }
 
-function buildInitialState(deck1Id: string, deck2Id: string): GameState {
-  const player1 = createPlayer('player1', 'Joueur 1', deck1Id);
-  const player2 = createPlayer('player2', 'Joueur 2', deck2Id);
+function buildInitialState(deck1Id: string, deck2Id: string, names: [string, string] = ['Joueur 1', 'Joueur 2']): GameState {
+  const player1 = createPlayer('player1', names[0], deck1Id);
+  const player2 = createPlayer('player2', names[1], deck2Id);
   return {
     turn: 1,
     activePlayerId: player1.id,
@@ -191,7 +191,7 @@ function createUnitInstance(card: Card & { attack: number; health: number }): Un
 
 interface GameStore {
   game: GameState;
-  startGame: (deck1Id: string, deck2Id: string) => void;
+  startGame: (deck1Id: string, deck2Id: string, names?: [string, string]) => void;
   drawCard: (playerId: string) => void;
   playCard: (playerId: string, cardIndexInHand: number) => void;
   playTargetedCard: (playerId: string, cardIndexInHand: number, targetInstanceId: string) => void;
@@ -213,7 +213,7 @@ export const useGameStore = create<GameStore>((set) => ({
 
   loadGame: (game) => set({ game }),
 
-  startGame: (deck1Id, deck2Id) => set({ game: buildInitialState(deck1Id, deck2Id) }),
+  startGame: (deck1Id, deck2Id, names) => set({ game: buildInitialState(deck1Id, deck2Id, names) }),
 
   drawCard: (playerId) =>
     set((state) => {

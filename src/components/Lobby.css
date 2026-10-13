@@ -186,3 +186,10 @@
   border-color: var(--gold);
   box-shadow: 0 0 14px var(--gold-soft);
 }
+
+.lobby__cta--secondary {
+  background: transparent !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: none !important;
+}
