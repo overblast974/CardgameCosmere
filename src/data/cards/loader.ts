@@ -43,7 +43,33 @@ function bundleCards(bundle: DeckBundle): Card[] {
     ...bundle.fabrials,
     ...bundle.herauts,
     ...bundle.eclats,
+    ...(bundle.heroDefinition.avatar ? [bundle.heroDefinition.avatar] : []),
   ];
+}
+
+/** Cartes que le constructeur de deck propose pour un deck : son Ordre + les neutres (pas l'Avatar). */
+export function deckPool(deckId: string): Card[] {
+  const bundle = getDeckBundle(deckId);
+  return [...bundle.units, ...bundle.surges, ...bundle.fabrials, ...bundle.herauts, ...bundle.eclats];
+}
+
+export const DECK_SIZE = 30;
+export const MAX_COPIES = 3;
+
+/** Valide une liste de 30 ids pour un deck : 3 copies max, 1 Éclat, uniquement des cartes du pool. */
+export function validateDeckList(deckId: string, cardIds: string[]): string[] {
+  const errors: string[] = [];
+  const pool = new Set(deckPool(deckId).map((c) => c.id));
+  if (cardIds.length !== DECK_SIZE) errors.push(`Le deck doit contenir ${DECK_SIZE} cartes (${cardIds.length}).`);
+  const counts = new Map<string, number>();
+  for (const id of cardIds) counts.set(id, (counts.get(id) ?? 0) + 1);
+  for (const [id, n] of counts) {
+    const card = getCardById(id);
+    if (!card || !pool.has(id)) errors.push(`Carte inconnue pour ce deck : ${id}.`);
+    else if (card.type === 'eclat' && n > 1) errors.push(`Un seul Éclat par deck (${card.name}).`);
+    else if (n > MAX_COPIES) errors.push(`${MAX_COPIES} copies max (${card.name}).`);
+  }
+  return errors;
 }
 
 /** Toutes les cartes connues, tous decks confondus. */

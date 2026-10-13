@@ -4,8 +4,10 @@ import { Lobby } from './components/Lobby';
 import { RosharBackground } from './components/RosharBackground';
 import { useGameStore } from './store/gameStore';
 import { useMultiplayerSync } from './firebase/useMultiplayerSync';
+import { effectiveDeck } from './game/deckStorage';
+import type { DeckOverrides } from './store/gameStore';
 
-type Session = { mode: 'local' } | { mode: 'online'; matchId: string; role: 'player1' | 'player2' };
+type Session = { mode: 'local' } | { mode: 'solo' } | { mode: 'online'; matchId: string; role: 'player1' | 'player2' };
 
 function getInitialSession(): Session | null {
   const params = new URLSearchParams(window.location.search);
@@ -24,8 +26,14 @@ function clearMatchParams() {
   window.history.replaceState(null, '', url.toString());
 }
 
+/** Listes personnalisées enregistrées dans le navigateur pour les deux decks choisis. */
+function overridesFor(deck1Id: string, deck2Id: string): DeckOverrides {
+  return { player1: effectiveDeck(deck1Id), player2: effectiveDeck(deck2Id) };
+}
+
 function App() {
   const [session, setSession] = useState<Session | null>(getInitialSession);
+  const [overrides, setOverrides] = useState<DeckOverrides>({});
   const startGame = useGameStore((state) => state.startGame);
 
   useMultiplayerSync(session?.mode === 'online' ? session.matchId : null);
@@ -36,13 +44,25 @@ function App() {
         <RosharBackground />
         <Lobby
         onStartLocal={(deck1Id, deck2Id) => {
-          startGame(deck1Id, deck2Id);
+          const custom = overridesFor(deck1Id, deck2Id);
+          setOverrides(custom);
+          startGame(deck1Id, deck2Id, undefined, custom);
           setSession({ mode: 'local' });
+        }}
+        onStartSolo={(deck1Id, deck2Id) => {
+          const custom = overridesFor(deck1Id, deck2Id);
+          setOverrides(custom);
+          startGame(deck1Id, deck2Id, ['Vous', 'IA'], custom);
+          setSession({ mode: 'solo' });
         }}
         onJoinMatch={(matchId, role, decks) => {
           // Le créateur du salon fixe les decks ; le joueur qui rejoint
           // recevra l'état complet via la synchro Firebase.
-          if (decks) startGame(decks[0], decks[1]);
+          if (decks) {
+            const custom = overridesFor(decks[0], decks[1]);
+            setOverrides(custom);
+            startGame(decks[0], decks[1], undefined, custom);
+          }
           const url = new URL(window.location.href);
           url.searchParams.set('match', matchId);
           url.searchParams.set('role', role);
@@ -60,6 +80,8 @@ function App() {
       <GameBoard
         localPlayerId={session.mode === 'online' ? session.role : 'player1'}
         hotseat={session.mode === 'local'}
+        aiPlayerId={session.mode === 'solo' ? 'player2' : undefined}
+        deckOverrides={overrides}
         onExit={() => {
           clearMatchParams();
           setSession(null);

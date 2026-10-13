@@ -25,6 +25,7 @@ Si l'image n'existe pas, la carte affiche son glyphe emoji par défaut.
 - `lashing-complet.webp`
 - `contre-gravite.webp`
 - `sphere-infusion.webp`
+- `cri-du-pont-quatre.webp`
 - `jezrien.webp`
 - `honor.webp`
 

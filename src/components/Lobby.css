@@ -186,3 +186,23 @@
   border-color: var(--gold);
   box-shadow: 0 0 14px var(--gold-soft);
 }
+
+.lobby__cta--secondary {
+  background: transparent !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: none !important;
+}
+
+.deck-picker__label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lobby .deck-picker__edit {
+  padding: 4px 10px;
+  font-size: 0.74rem;
+  border-radius: 8px;
+}

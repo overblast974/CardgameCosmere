@@ -9,14 +9,14 @@
     "attack": 3,
     "health": 30,
     "bondedSprenId": "sylphrena",
-    "text": "Niveau 2 « Souffle de Stormlight » : +5 PV et +1 ATK aux alliés. Niveau 3 « Lashing » : une unité ennemie ne peut pas attaquer à son prochain tour. Niveau 4 « Armure Radiante » : +15 bouclier."
+    "text": "Lien 1 : Sylphrena entre en jeu, +1 PV par tour. Lien 2 : +5 PV, +1 ATK aux alliés. Lien 3 : Lance d'Éclat, frappe et riposte, Lashing. Lien 4 : Plaque (+15 bouclier) et Avatar."
   },
   "heroDefinition": {
     "cardId": "kaladin-stormblessed",
     "order": "Windrunner",
     "baseHealth": 30,
     "linkCondition": {
-      "description": "Gagne 1 Lien chaque fois qu'une unité alliée absorbe une attaque grâce à Couverture."
+      "description": "Gagne 1 Lien chaque fois qu'une unité alliée se place en Couverture, et chaque fois qu'elle absorbe une attaque pour un allié."
     },
     "linkGainTrigger": "protection",
     "heroPowerType": "lashing",
@@ -25,7 +25,7 @@
       {
         "linkLevelRequired": 1,
         "name": "Esquisse",
-        "description": "Sylphrena se manifeste aux côtés de Kaladin."
+        "description": "Sylphrena se manifeste sur le plateau (1/1, Vol) et la Stormlight referme les blessures de Kaladin : +1 PV au début de chacun de ses tours, jusqu'à 30."
       },
       {
         "linkLevelRequired": 2,
@@ -40,7 +40,7 @@
       {
         "linkLevelRequired": 4,
         "name": "Armure Radiante",
-        "description": "Kaladin gagne +15 bouclier. Sylphrena atteint sa forme finale."
+        "description": "Kaladin gagne +15 bouclier, Sylphrena atteint sa forme finale (3/3, indestructible) et Kaladin descend au combat : la carte « Kaladin, Chevalier Radiant » rejoint la main."
       }
     ],
     "oaths": {
@@ -70,7 +70,21 @@
         "order": "Windrunner",
         "effect": "Les ventspren s'assemblent en armure vivante : +15 bouclier."
       }
-    ]
+    ],
+    "avatar": {
+      "id": "kaladin-avatar",
+      "name": "Kaladin, Chevalier Radiant",
+      "type": "radiant",
+      "cost": 5,
+      "order": "Windrunner",
+      "attack": 6,
+      "health": 8,
+      "keywords": [
+        "zele",
+        "vol"
+      ],
+      "text": "Avatar du héros (Lien 4). Zèle, Vol. S'il est détruit, Kaladin subit 5 dégâts et la carte revient en main au tour suivant."
+    }
   },
   "starterSpren": {
     "id": "sylphrena",
@@ -79,7 +93,7 @@
     "cost": 1,
     "order": "Windrunner",
     "bondedHeroId": "kaladin-stormblessed",
-    "text": "Spren d'honneur de Kaladin. Évolue avec le niveau de Lien.",
+    "text": "Spren d'honneur de Kaladin. Entre en jeu au Lien 1 et évolue avec le Lien ; se dissipe au lieu de mourir et revient au tour suivant.",
     "levels": {
       "1": {
         "attack": 1,
@@ -87,7 +101,7 @@
         "keywords": [
           "vol"
         ],
-        "description": "1/1, vole autour de Kaladin."
+        "description": "1/1, Vol : ignore les Couvertures."
       },
       "2": {
         "attack": 1,
@@ -95,7 +109,7 @@
         "keywords": [
           "vol"
         ],
-        "description": "1/2, infuse Kaladin et ses alliés de Stormlight."
+        "description": "1/2, Vol. Infuse Kaladin et ses alliés de Stormlight."
       },
       "3": {
         "attack": 0,
@@ -103,7 +117,7 @@
         "keywords": [
           "arme"
         ],
-        "description": "Se transforme en Lance d'Éclat : +2 ATK à Kaladin."
+        "description": "Devient la Lance d'Éclat : quitte le plateau, +2 ATK à Kaladin."
       },
       "4": {
         "attack": 3,
@@ -112,7 +126,7 @@
           "vol",
           "indestructible-si-heros-vivant"
         ],
-        "description": "3/3, indestructible tant que Kaladin est en vie."
+        "description": "3/3, Vol, indestructible tant que Kaladin est en vie."
       }
     }
   },
@@ -152,6 +166,47 @@
       "attack": 3,
       "health": 3,
       "text": "Tandem : +1 ATK si un autre Drehy & Skar est en jeu."
+    },
+    {
+      "id": "teft",
+      "name": "Teft",
+      "type": "radiant",
+      "cost": 5,
+      "order": "Windrunner",
+      "attack": 4,
+      "health": 5,
+      "keywords": [
+        "couverture"
+      ],
+      "text": "Couverture. Le sergent vétéran du Pont Quatre tient la ligne."
+    },
+    {
+      "id": "rock",
+      "name": "Rock",
+      "type": "radiant",
+      "cost": 5,
+      "order": "Windrunner",
+      "attack": 1,
+      "health": 8,
+      "keywords": [
+        "couverture",
+        "obstination"
+      ],
+      "text": "Couverture, Obstination. Il porte le pont, pas la lance."
+    },
+    {
+      "id": "sigzil",
+      "name": "Sigzil",
+      "type": "radiant",
+      "cost": 6,
+      "order": "Windrunner",
+      "attack": 4,
+      "health": 4,
+      "arrival": {
+        "effectType": "draw",
+        "effectValue": 2
+      },
+      "text": "Cri d'arrivée : pioche 2 cartes. Le scribe du Pont Quatre a tout calculé."
     }
   ],
   "surges": [
@@ -159,7 +214,7 @@
       "id": "lashing-basique",
       "name": "Lashing Basique",
       "type": "surge",
-      "cost": 2,
+      "cost": 1,
       "order": "Windrunner",
       "effectType": "buff",
       "effectValue": 1,
@@ -171,8 +226,9 @@
       "type": "surge",
       "cost": 3,
       "order": "Windrunner",
-      "effectType": "disable",
-      "effect": "Une unité ennemie ne peut pas attaquer à son prochain tour."
+      "effectType": "lash",
+      "effect": "Projette une unité ennemie contre le ciel : 2 dégâts, et elle ne peut pas attaquer à son prochain tour.",
+      "effectValue": 2
     },
     {
       "id": "contre-gravite",
@@ -182,6 +238,26 @@
       "order": "Windrunner",
       "effectType": "bounce",
       "effect": "Renvoie une unité ennemie dans la main de son propriétaire."
+    },
+    {
+      "id": "cri-du-pont-quatre",
+      "name": "Cri du Pont Quatre",
+      "type": "surge",
+      "cost": 2,
+      "order": "Windrunner",
+      "effectType": "draw",
+      "effectValue": 2,
+      "effect": "Les Frères du Pont se serrent les coudes : pioche 2 cartes."
+    },
+    {
+      "id": "vol-au-dessus-des-gouffres",
+      "name": "Vol au-dessus des Gouffres",
+      "type": "surge",
+      "cost": 5,
+      "order": "Windrunner",
+      "effectType": "aoe-buff",
+      "effectValue": 1,
+      "effect": "Toutes tes unités gagnent +1/+1."
     }
   ],
   "fabrials": [
@@ -194,6 +270,28 @@
       "effectType": "stormlight",
       "effectValue": 2,
       "effect": "Gagne 2 Stormlight ce tour."
+    },
+    {
+      "id": "lame-pretee",
+      "name": "Lame d'Éclat prêtée",
+      "type": "fabrial",
+      "cost": 4,
+      "order": "Neutre",
+      "effectType": "equip",
+      "effectAttack": 3,
+      "effectHealth": 0,
+      "effect": "Équipement : une unité alliée gagne +3 ATK."
+    },
+    {
+      "id": "plaque-pretee",
+      "name": "Plaque d'Éclat prêtée",
+      "type": "fabrial",
+      "cost": 4,
+      "order": "Neutre",
+      "effectType": "equip",
+      "effectAttack": 0,
+      "effectHealth": 4,
+      "effect": "Équipement : une unité alliée gagne +4 PV."
     }
   ],
   "herauts": [
@@ -205,7 +303,11 @@
       "order": "Neutre",
       "attack": 5,
       "health": 5,
-      "effect": "Cri d'arrivée : ton héros gagne 1 niveau de Lien."
+      "effect": "Cri d'arrivée : ton héros gagne 1 niveau de Lien.",
+      "arrival": {
+        "effectType": "link",
+        "effectValue": 1
+      }
     }
   ],
   "eclats": [
@@ -232,16 +334,26 @@
       "lopen",
       "drehy-skar",
       "drehy-skar",
-      "lashing-basique",
+      "teft",
+      "teft",
+      "rock",
+      "rock",
+      "sigzil",
       "lashing-basique",
       "lashing-basique",
       "lashing-complet",
       "lashing-complet",
+      "lashing-complet",
       "contre-gravite",
       "contre-gravite",
+      "cri-du-pont-quatre",
+      "cri-du-pont-quatre",
+      "vol-au-dessus-des-gouffres",
+      "vol-au-dessus-des-gouffres",
       "sphere-infusion",
       "sphere-infusion",
-      "jezrien",
+      "lame-pretee",
+      "plaque-pretee",
       "jezrien",
       "honor"
     ]

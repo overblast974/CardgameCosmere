@@ -1,0 +1,53 @@
+/* Sous le plateau, dans le contexte racine (z-index négatif) : les clips
+   d'effet en mode « screen » se fondent aussi avec la carte. */
+.battlefield-map {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: var(--bg-deep);
+}
+
+.battlefield-map__img,
+.battlefield-map__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.battlefield-map__img--landscape {
+  display: none;
+}
+
+.battlefield-map__video {
+  animation: bg-video-in 1.6s ease-out both;
+}
+
+/* Lisibilité des panneaux et de la main : assombrit le haut et le bas. */
+.battlefield-map__shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(4, 6, 12, 0.72) 0%, rgba(4, 6, 12, 0.15) 22%, rgba(4, 6, 12, 0.1) 70%, rgba(4, 6, 12, 0.8) 100%),
+    radial-gradient(ellipse 90% 90% at 50% 50%, transparent 55%, rgba(3, 5, 10, 0.55) 100%);
+}
+
+@media (min-aspect-ratio: 1/1) {
+  .battlefield-map__img--portrait,
+  .battlefield-map__video {
+    display: none;
+  }
+  .battlefield-map__img--landscape {
+    display: block;
+    animation: bg-drift 60s ease-in-out infinite alternate;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .battlefield-map__img--landscape,
+  .battlefield-map__video {
+    animation: none;
+  }
+}

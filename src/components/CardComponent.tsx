@@ -1,5 +1,6 @@
+import type { ButtonHTMLAttributes, CSSProperties } from 'react';
 import type { Card, LinkLevel } from '../types/card';
-import { cardArt, cardIcons } from '../assets/artwork';
+import { cardArt, cardIcons, frameArt, frameTextureFor } from '../assets/artwork';
 import './CardComponent.css';
 
 const TYPE_LABELS: Record<Card['type'], string> = {
@@ -12,9 +13,10 @@ const TYPE_LABELS: Record<Card['type'], string> = {
   manifestation: 'Manifestation',
 };
 
+/** Libellés d'Ordre abrégés pour tenir sur la ligne de type entre crochets. */
 const ORDER_LABELS: Record<string, string> = {
-  Windrunner: 'Coureur du Vent',
-  Skybreaker: 'Chasseur du Ciel',
+  Windrunner: 'C. du Vent',
+  Skybreaker: 'C. du Ciel',
   Neutre: 'Neutre',
 };
 
@@ -74,10 +76,18 @@ interface CardComponentProps {
   /** Manifestation pas encore débloquée : grisée avec le niveau de Lien requis. */
   locked?: boolean;
   compact?: boolean;
+  /** Format « main » : plus étroit, texte tronqué, pensé pour l'éventail. */
+  hand?: boolean;
+  /** La carte est en cours de saisie : son emplacement d'origine s'estompe. */
+  dragging?: boolean;
   /** Illustration à afficher à la place de celle de la carte (ex. stade d'évolution d'un héros). */
   artUrl?: string;
   /** Identifiant pour la couche d'effets (positionnement des VFX). */
   fxId?: string;
+  /** Valeur de `data-drop` : cible possible d'une saisie (ex. `enemy-unit:<id>`). */
+  dropId?: string;
+  /** Gestionnaires de saisie (pointer down, click capture) fournis par useDragSource. */
+  handlers?: ButtonHTMLAttributes<HTMLButtonElement>;
   onClick?: () => void;
 }
 
@@ -124,8 +134,12 @@ export function CardComponent({
   guarding,
   locked,
   compact,
+  hand,
+  dragging,
   artUrl,
   fxId,
+  dropId,
+  handlers,
   onClick,
 }: CardComponentProps) {
   const base = getAttackHealth(card, sprenLevel);
@@ -147,14 +161,41 @@ export function CardComponent({
     lashed ? 'card--lashed' : '',
     locked ? 'card--locked' : '',
     compact ? 'card--compact' : '',
+    hand ? 'card--hand' : '',
+    dragging ? 'card--dragging' : '',
   ]
     .filter(Boolean)
     .join(' ');
 
   const hasStats = attack !== undefined || health !== undefined;
 
+  // Habillage : texture de cadre par type / Ordre, parchemin et ornement de coin.
+  const texture = frameTextureFor(card.type, card.order);
+  const frameStyle = {
+    '--frame-tex': texture ? `url(${texture})` : 'none',
+    '--parchment': frameArt['tex-parchment'] ? `url(${frameArt['tex-parchment']})` : 'none',
+    '--corner': frameArt.corner ? `url(${frameArt.corner})` : 'none',
+  } as CSSProperties;
+
   return (
-    <button type="button" className={classes} onClick={onClick} disabled={disabled} data-fx={fxId}>
+    <button
+      type="button"
+      className={classes}
+      style={frameStyle}
+      {...handlers}
+      onClick={onClick}
+      disabled={disabled}
+      data-fx={fxId}
+      data-drop={dropId}
+    >
+      {frameArt.corner && (
+        <>
+          <span className="card__corner card__corner--tl" />
+          <span className="card__corner card__corner--tr" />
+          <span className="card__corner card__corner--br" />
+          <span className="card__corner card__corner--bl" />
+        </>
+      )}
       {card.type === 'manifestation' ? (
         <span className="card__cost card__cost--link" title="Niveau de Lien requis">
           ✦{card.linkLevel}
@@ -171,7 +212,7 @@ export function CardComponent({
 
       <div className={`card__art${art ? ' card__art--illustrated' : ''}`}>
         {art ? (
-          <img className="card__art-img" src={art} alt="" loading="lazy" />
+          <img className="card__art-img" src={art} alt="" loading="lazy" draggable={false} />
         ) : cardIcons[card.id] ? (
           <span className="card__art-icon" dangerouslySetInnerHTML={{ __html: cardIcons[card.id] }} />
         ) : (

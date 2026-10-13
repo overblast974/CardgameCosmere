@@ -9,14 +9,14 @@
     "attack": 4,
     "health": 30,
     "bondedSprenId": "hautjuge",
-    "text": "Niveau 2 « Souffle de Stormlight » : +5 PV et +1 ATK aux alliés. Niveau 3 « Jugement Céleste » : inflige 3 dégâts à une unité ennemie. Niveau 4 « Perfection du Serment » : +15 bouclier."
+    "text": "Lien 1 : le Hautjuge entre en jeu, +1 PV par tour. Lien 2 : +5 PV, +1 ATK aux alliés. Lien 3 : Lame d'Éclat, frappe et riposte, Jugement Céleste. Lien 4 : Plaque (+15 bouclier) et Avatar."
   },
   "heroDefinition": {
     "cardId": "szeth-vallano",
     "order": "Skybreaker",
     "baseHealth": 30,
     "linkCondition": {
-      "description": "Gagne 1 Lien chaque fois qu'une unité ennemie est détruite par tes attaques ou tes pouvoirs."
+      "description": "Gagne 1 Lien chaque fois qu'une unité ennemie est détruite par tes attaques, tes sorts ou tes pouvoirs."
     },
     "linkGainTrigger": "destruction",
     "heroPowerType": "smite",
@@ -26,7 +26,7 @@
       {
         "linkLevelRequired": 1,
         "name": "Esquisse",
-        "description": "Un hautspren observe Szeth et juge ses actes."
+        "description": "Le Hautjuge se manifeste sur le plateau (1/1, Vol) et la Stormlight referme les blessures de Szeth : +1 PV au début de chacun de ses tours, jusqu'à 30."
       },
       {
         "linkLevelRequired": 2,
@@ -41,7 +41,7 @@
       {
         "linkLevelRequired": 4,
         "name": "Perfection du Serment",
-        "description": "Szeth gagne +15 bouclier. La justice est absolue."
+        "description": "Szeth gagne +15 bouclier, le Hautjuge atteint sa forme finale (3/3, indestructible) et Szeth descend au combat : la carte « Szeth, Lame de la Loi » rejoint la main."
       }
     ],
     "oaths": {
@@ -71,7 +71,21 @@
         "order": "Skybreaker",
         "effect": "Une armure de lumière blanche se referme sur Szeth : +15 bouclier."
       }
-    ]
+    ],
+    "avatar": {
+      "id": "szeth-avatar",
+      "name": "Szeth, Lame de la Loi",
+      "type": "radiant",
+      "cost": 5,
+      "order": "Skybreaker",
+      "attack": 7,
+      "health": 7,
+      "keywords": [
+        "zele",
+        "vol"
+      ],
+      "text": "Avatar du héros (Lien 4). Zèle, Vol. S'il est détruit, Szeth subit 5 dégâts et la carte revient en main au tour suivant."
+    }
   },
   "starterSpren": {
     "id": "hautjuge",
@@ -80,7 +94,7 @@
     "cost": 1,
     "order": "Skybreaker",
     "bondedHeroId": "szeth-vallano",
-    "text": "Hautspren de Szeth. Évolue avec le niveau de Lien.",
+    "text": "Hautspren de Szeth. Entre en jeu au Lien 1 et évolue avec le Lien ; se dissipe au lieu de mourir et revient au tour suivant.",
     "levels": {
       "1": {
         "attack": 1,
@@ -88,7 +102,7 @@
         "keywords": [
           "vol"
         ],
-        "description": "1/1, fissure lumineuse dans le ciel."
+        "description": "1/1, Vol : ignore les Couvertures."
       },
       "2": {
         "attack": 1,
@@ -96,7 +110,7 @@
         "keywords": [
           "vol"
         ],
-        "description": "1/2, infuse Szeth et ses alliés de Stormlight."
+        "description": "1/2, Vol. Infuse Szeth et ses alliés de Stormlight."
       },
       "3": {
         "attack": 0,
@@ -104,7 +118,7 @@
         "keywords": [
           "arme"
         ],
-        "description": "Se change en Lame d'Éclat : +2 ATK à Szeth."
+        "description": "Se change en Lame d'Éclat : quitte le plateau, +2 ATK à Szeth."
       },
       "4": {
         "attack": 3,
@@ -113,7 +127,7 @@
           "vol",
           "indestructible-si-heros-vivant"
         ],
-        "description": "3/3, indestructible tant que Szeth est en vie."
+        "description": "3/3, Vol, indestructible tant que Szeth est en vie."
       }
     }
   },
@@ -153,6 +167,47 @@
       "attack": 4,
       "health": 3,
       "text": "Bras armé de la loi. Nul ne fuit son verdict."
+    },
+    {
+      "id": "maitresse-ki",
+      "name": "Maîtresse Ki",
+      "type": "radiant",
+      "cost": 5,
+      "order": "Skybreaker",
+      "attack": 4,
+      "health": 5,
+      "keywords": [
+        "couverture"
+      ],
+      "text": "Couverture. Elle a formé des générations de Chasseurs du Ciel."
+    },
+    {
+      "id": "juge-shin",
+      "name": "Juge Shin",
+      "type": "radiant",
+      "cost": 5,
+      "order": "Skybreaker",
+      "attack": 3,
+      "health": 4,
+      "arrival": {
+        "effectType": "draw",
+        "effectValue": 1
+      },
+      "text": "Cri d'arrivée : pioche 1 carte. La loi est écrite, il suffit de la lire."
+    },
+    {
+      "id": "haute-juge",
+      "name": "Haute Juge",
+      "type": "radiant",
+      "cost": 6,
+      "order": "Skybreaker",
+      "attack": 5,
+      "health": 5,
+      "arrival": {
+        "effectType": "aoe-damage",
+        "effectValue": 1
+      },
+      "text": "Cri d'arrivée : 1 dégât à toutes les unités ennemies."
     }
   ],
   "surges": [
@@ -184,6 +239,16 @@
       "effectType": "draw",
       "effectValue": 2,
       "effect": "Pioche 2 cartes."
+    },
+    {
+      "id": "sentence",
+      "name": "Sentence",
+      "type": "surge",
+      "cost": 5,
+      "order": "Skybreaker",
+      "effectType": "damage",
+      "effectValue": 4,
+      "effect": "Inflige 4 dégâts à une unité ennemie."
     }
   ],
   "fabrials": [
@@ -196,6 +261,28 @@
       "effectType": "stormlight",
       "effectValue": 2,
       "effect": "Gagne 2 Stormlight ce tour."
+    },
+    {
+      "id": "lame-pretee",
+      "name": "Lame d'Éclat prêtée",
+      "type": "fabrial",
+      "cost": 4,
+      "order": "Neutre",
+      "effectType": "equip",
+      "effectAttack": 3,
+      "effectHealth": 0,
+      "effect": "Équipement : une unité alliée gagne +3 ATK."
+    },
+    {
+      "id": "plaque-pretee",
+      "name": "Plaque d'Éclat prêtée",
+      "type": "fabrial",
+      "cost": 4,
+      "order": "Neutre",
+      "effectType": "equip",
+      "effectAttack": 0,
+      "effectHealth": 4,
+      "effect": "Équipement : une unité alliée gagne +4 PV."
     }
   ],
   "herauts": [
@@ -207,7 +294,11 @@
       "order": "Neutre",
       "attack": 5,
       "health": 5,
-      "effect": "Cri d'arrivée : inflige 2 dégâts à toutes les unités ennemies."
+      "effect": "Cri d'arrivée : inflige 2 dégâts à toutes les unités ennemies.",
+      "arrival": {
+        "effectType": "aoe-damage",
+        "effectValue": 2
+      }
     }
   ],
   "eclats": [
@@ -234,16 +325,26 @@
       "garde-shin",
       "executeur-skybreaker",
       "executeur-skybreaker",
+      "maitresse-ki",
+      "maitresse-ki",
+      "juge-shin",
+      "juge-shin",
+      "juge-shin",
+      "haute-juge",
       "division",
       "division",
       "division",
       "gravitation",
       "gravitation",
+      "sentence",
+      "sentence",
       "loi-du-ciel",
       "loi-du-ciel",
       "loi-du-ciel",
       "sphere-de-jugement",
       "sphere-de-jugement",
+      "lame-pretee",
+      "plaque-pretee",
       "nale",
       "nightblood"
     ]

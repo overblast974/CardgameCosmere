@@ -38,6 +38,20 @@ const bgModules = import.meta.glob('./bg/*.{webp,png,jpg,jpeg,avif}', {
   import: 'default',
 }) as Record<string, string>;
 
+// Cartes de bataille (fond du plateau) : <nom>-portrait et <nom>-landscape,
+// plus une boucle optionnelle loops/map-<nom>.mp4 pour le format portrait.
+const mapModules = import.meta.glob('./maps/*.{webp,png,jpg,jpeg,avif}', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+
+// Habillage des cartes : textures de cadre par type (`tex-<type>`), parchemin
+// de la boîte de texte (`tex-parchment`) et ornement de coin (`corner`).
+const frameModules = import.meta.glob('./frames/*.{webp,png}', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+
 // Icônes fantasy (game-icons.net, CC-BY 3.0) servant de repli élégant avant
 // que de vraies illustrations soient déposées. Importées en texte brut pour
 // pouvoir les colorier en CSS (fill: currentColor).
@@ -66,6 +80,15 @@ export const cardIcons = keyByFilename(iconModules);
 /** Stades d'évolution des héros, indexés par `<heroId>-<niveau>`. */
 export const heroStageArt = keyByFilename(heroModules);
 
+// L'Avatar du héros (carte reçue au Lien 4) reprend le stade final du héros.
+const AVATAR_STAGE: Record<string, string> = {
+  'kaladin-avatar': 'kaladin-stormblessed-4',
+  'szeth-avatar': 'szeth-vallano-4',
+};
+for (const [avatarId, stage] of Object.entries(AVATAR_STAGE)) {
+  if (!cardArt[avatarId] && heroStageArt[stage]) cardArt[avatarId] = heroStageArt[stage];
+}
+
 /** Variantes de format d'une même vidéo (le navigateur choisit celle qu'il lit). */
 export interface VideoSources {
   mp4?: string;
@@ -93,6 +116,22 @@ export function hasVideo(sources: VideoSources | undefined): sources is VideoSou
 
 /** URL des fonds déposés, indexés par nom de fichier (« main » recommandé). */
 export const backgroundArt = keyByFilename(bgModules);
+
+/** Cartes de bataille, indexées par nom de fichier (`gouffres-portrait`, `gouffres-landscape`…). */
+export const mapArt = keyByFilename(mapModules);
+
+/** Textures et ornements du cadre des cartes, indexés par nom de fichier. */
+export const frameArt = keyByFilename(frameModules);
+
+/** Texture de cadre d'un type de carte (`tex-radiant`…), ou undefined si non déposée. */
+export function frameTextureFor(type: string, order?: string): string | undefined {
+  // Les Radiants prennent la texture de leur Ordre quand elle existe.
+  if (type === 'radiant' && order) {
+    const byOrder = frameArt[`tex-${order.toLowerCase()}`];
+    if (byOrder) return byOrder;
+  }
+  return frameArt[`tex-${type}`];
+}
 
 /** Fond principal si l'utilisateur en a déposé un, sinon undefined (fond CSS animé). */
 export const mainBackground: string | undefined =
